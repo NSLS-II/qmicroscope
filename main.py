@@ -39,13 +39,14 @@ class Form(QMainWindow):
 
         # Create layout and add widgets
         layout = QVBoxLayout()
-        layout.addWidget(self.container)
         hButtonBox = QHBoxLayout()
         hButtonBox.addStretch()
         hButtonBox.addWidget(self.startButton)
         hButtonBox.addWidget(self.settingsButton)
         hButtonBox.addStretch()
         layout.addLayout(hButtonBox)
+        layout.addWidget(self.container)
+        
 
         # Set main windows widget using our central layout
         widget = QWidget()

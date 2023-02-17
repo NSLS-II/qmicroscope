@@ -1,14 +1,17 @@
 from qtpy.QtWidgets import ( QWidget, QGridLayout )
 from qtpy.QtGui import QPaintEvent
 from qtpy.QtCore import QSettings
-import microscope
 from microscope.microscope import Microscope
 from typing import List
 
 """ A widget that contains one or more microscope widgets in a grid. """
 class Container(QWidget):
-    def __init__(self, parent:"QWidget|None"=None):
+    def __init__(self, parent:"QWidget|None"=None, plugins=None):
         super(Container, self).__init__(parent)
+        if not plugins:
+            self.plugins = []
+        else:
+            self.plugins = plugins
         self.parent_widget = parent
         self._update: bool = True     # Is an update required
         self._count: int = 1         # The number of widgets contained
@@ -17,11 +20,11 @@ class Container(QWidget):
 
         self._widgets: "List[Microscope]" = []
         
-        if hasattr(self.parent_widget, 'set_main_microscope_url'):
-            microscope_widget = Microscope(self)
-            microscope_widget.clicked_url.connect(self.parent_widget.set_main_microscope_url)
+        if hasattr(self.parent_widget, 'setup_main_microscope'):
+            microscope_widget = Microscope(self, plugins=self.plugins)
+            microscope_widget.clicked_url.connect(self.parent_widget.setup_main_microscope)
         else:
-            microscope_widget = Microscope(self, viewport=False)
+            microscope_widget = Microscope(self, viewport=False, plugins=self.plugins)
 
         self._widgets.append(microscope_widget)
 
@@ -97,9 +100,9 @@ class Container(QWidget):
         if len(self._widgets) > self._count:
             self._widgets = self._widgets[:self._count]
         while(len(self._widgets) < self._count):
-            microscope_widget = Microscope(self)
-            if hasattr(self.parent_widget, 'set_main_microscope_url'):
-                microscope_widget.clicked_url.connect(self.parent_widget.set_main_microscope_url)
+            microscope_widget = Microscope(self, plugins=self.plugins)
+            if hasattr(self.parent_widget, 'setup_main_microscope'):
+                microscope_widget.clicked_url.connect(self.parent_widget.setup_main_microscope)
             self._widgets.append(microscope_widget)
 
     def paintEvent(self, event: QPaintEvent) -> None:
@@ -148,8 +151,6 @@ class Container(QWidget):
         #self.updateMicroscope()
         # Write out all the settings for the widgets.
         for i in range(len(self._widgets)):
-            settings.beginGroup(f'Camera{i}')
-            self._widgets[i].writeSettings(settings)
-            settings.endGroup()
+            self._widgets[i].writeSettings(settings, settings_group=f'Camera{i}')
 
         settings.endGroup()
