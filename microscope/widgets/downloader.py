@@ -67,7 +67,7 @@ class VideoThread(QThread):
                 self.showing_error = False
                 self.imageReady.emit(qimage)
             except urllib.error.URLError:
-                print('Error in URL')
+                #print('Error in URL')
                 qimage = self.draw_message(f'Could not get data from: {self.url}')
                 self.imageReady.emit(qimage)
 

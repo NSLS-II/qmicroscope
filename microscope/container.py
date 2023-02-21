@@ -19,12 +19,11 @@ class Container(QWidget):
         self._horizontal: bool = True # When setting the count prefer horizontal
 
         self._widgets: "List[Microscope]" = []
-        
+        microscope_widget = Microscope(self, plugins=self.plugins)
         if hasattr(self.parent_widget, 'setup_main_microscope'):
-            microscope_widget = Microscope(self, plugins=self.plugins)
             microscope_widget.clicked_url.connect(self.parent_widget.setup_main_microscope)
-        else:
-            microscope_widget = Microscope(self, viewport=False, plugins=self.plugins)
+        #else:
+            #microscope_widget = Microscope(self, viewport=False, plugins=self.plugins)
 
         self._widgets.append(microscope_widget)
 
