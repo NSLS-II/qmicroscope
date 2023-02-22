@@ -29,6 +29,7 @@ class Microscope(QWidget):
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.view)
         self.setLayout(self.layout)
+        self.settings_group = None
 
         self.yDivs: int = 5
         self.xDivs: int = 5
@@ -267,25 +268,30 @@ class Microscope(QWidget):
         """ Write the settings for this microscope instance. """
         if not settings:
             settings = self.settings
+        else:
+            self.settings = settings
 
         if not settings_group:
             settings_group = self.settings_group
+        else:
+            self.settings_group = settings_group
         
-        settings.beginGroup(settings_group)
-        settings.setValue('url', self.url)
-        settings.setValue('fps', self.fps)
-        settings.setValue('xDivs', self.xDivs)
-        settings.setValue('yDivs', self.yDivs)
-        settings.setValue('color', self.color)
-        if len(self.scale) == 2:
-            print(f"Writing {self.settings_group} {self.scale}")
-            settings.setValue('scaleW', self.scale[0])
-            settings.setValue('scaleH', self.scale[1])
+        if settings_group:
+            settings.beginGroup(settings_group)
+            settings.setValue('url', self.url)
+            settings.setValue('fps', self.fps)
+            settings.setValue('xDivs', self.xDivs)
+            settings.setValue('yDivs', self.yDivs)
+            settings.setValue('color', self.color)
+            if len(self.scale) == 2:
+                print(f"Writing {settings_group} {self.scale}")
+                settings.setValue('scaleW', self.scale[0])
+                settings.setValue('scaleH', self.scale[1])
 
-        for plugin in self.plugins:
-            settings.beginGroup(plugin.name)
-            settings_values = plugin.write_settings()
-            for key, value in settings_values.items():
-                settings.setValue(key, value)
+            for plugin in self.plugins:
+                settings.beginGroup(plugin.name)
+                settings_values = plugin.write_settings()
+                for key, value in settings_values.items():
+                    settings.setValue(key, value)
+                settings.endGroup()
             settings.endGroup()
-        settings.endGroup()
