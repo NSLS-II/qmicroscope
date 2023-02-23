@@ -13,26 +13,31 @@ class RecordPlugin(BaseImagePlugin):
         super().__init__(parent)
         self.parent = parent
         self.name = 'Record'
-        self.fourcc = cv.VideoWriter_fourcc(*'MJPG')
-        self.filename = '/nsls2/data/mx/video_test/output.mjpg'
+        self.fourcc = cv.VideoWriter_fourcc(*'avc1')
+        self.filename = '/nsls2/data/mx/video_test/output.mp4'
         self.recording = False
+        self.width = 640
+        self.height = 480
     
-    def qimage_to_mat(self, incomingImage):
+    def qimage_to_mat(self, incomingImage: QImage):
         '''  Converts a QImage into an opencv MAT format  '''
 
-        incomingImage = incomingImage.convertToFormat(QImage.Format.Format_RGB32)
-
-        width = incomingImage.width()
-        height = incomingImage.height()
+        #incomingImage = incomingImage.convertToFormat(QImage.Format.Format_RGB888)
+        incomingImage = incomingImage.rgbSwapped()
+        incomingImage = incomingImage.scaledToWidth(self.width)
+        self.height = incomingImage.height()
 
         ptr = incomingImage.bits()
-        ptr.setsize(height * width * 4)
-        arr = np.frombuffer(ptr, np.uint8).reshape((height, width, 4))
+        ptr.setsize(self.height * self.width * 3)
+        arr = np.frombuffer(ptr, np.uint8).reshape((self.height, self.width, 3))
         return arr
     
     def update_image_data(self, image: QImage):
+        #self.width = image.width()
+        #self.height = image.height()
+        mat = self.qimage_to_mat(image)
         if self.recording and image:
-            self.out.write(self.qimage_to_mat(image))
+            self.out.write(mat)
         return image
 
     def mouse_move_event(self, event: QMouseEvent):
@@ -55,7 +60,7 @@ class RecordPlugin(BaseImagePlugin):
     def _record(self):
         self.recording = not self.recording
         if self.recording:
-            self.out = cv.VideoWriter(self.filename, self.fourcc, 5.0, (1280,720))
+            self.out = cv.VideoWriter(self.filename, self.fourcc, 5.0, (self.width,self.height))
         else:
             self.out.release()
 

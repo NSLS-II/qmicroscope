@@ -22,13 +22,14 @@ from qtpy.QtWidgets import (
 from microscope.microscope import Microscope
 from microscope.container import Container
 from microscope.settings import Settings
+from microscope.plugins.record_plugin import RecordPlugin
 
 class Form(QMainWindow):
     def __init__(self, parent=None):
         super(Form, self).__init__(parent)
         # Create widgets
         self.setWindowTitle("NSLS-II Microscope Widget")
-        self.container = Container(self)
+        self.container = Container(self, plugins=[RecordPlugin])
         self.container.count = 3
         self.container.size = [2, 2]
         self.microscope = self.container.microscope(0)
