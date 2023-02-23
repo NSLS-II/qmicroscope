@@ -112,7 +112,7 @@ class Settings(QDialog):
         # Iterate over the microscopes and create entries in the select.
         self.selector.clear()
         for i in range(self.container.count):
-            print(f'doing element {i}')
+            #print(f'doing element {i}')
             self.selector.addItem(f'Camera {i + 1}', i)
         self.cameraCols.setValue(self.container.size[0])
         self.cameraRows.setValue(self.container.size[1])

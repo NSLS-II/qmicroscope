@@ -31,11 +31,16 @@ class ScalePlugin(BaseImagePlugin):
         self._hor_line_measure_text.setFont(_font)
         self._vert_line_measure_text.setFont(_font)
 
-    def _paint_scale(self, scene: QGraphicsScene):
+
+    def _remove_scale(self, scene: QGraphicsScene):
         for item in [self._hor_line, self._vert_line, 
                      self._hor_line_measure_text, self._vert_line_measure_text]:
             if item:
-                scene.removeItem(item)
+                if item.scene() == scene:
+                    scene.removeItem(item)
+
+    def _paint_scale(self, scene: QGraphicsScene):
+        self._remove_scale(scene)
         if self._pos is None:
             self._pos = QPoint(int(self.parent.view.width() - 30), 
                            int(self.parent.view.height() - 30))
@@ -106,7 +111,13 @@ class ScalePlugin(BaseImagePlugin):
         self._vert_line_measure = settings.get('vert_line_measure')
         if isinstance(self._visible, str):
             self._visible = True if self._visible.lower() == 'true' else False
+        
+
+    def start_plugin(self):
         self._paint_scale(self.parent.scene)
+
+    def stop_plugin(self):
+        self._remove_scale(self.parent.scene)
 
     def write_settings(self) -> Dict[str, Any]:
         settings = {}

@@ -34,12 +34,17 @@ class PresetPlugin(BasePlugin):
 
         return actions 
 
+    def start_plugin(self):
+        pass
+
+    def stop_plugin(self):
+        pass
+
     def read_settings(self, settings: Dict[str, Any]):
         self.presets = settings
 
         
     def write_settings(self) -> Dict[str, Any]:
-        #return {}
         return self.presets
 
     def _save_preset(self):

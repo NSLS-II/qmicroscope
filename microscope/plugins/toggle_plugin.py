@@ -37,3 +37,9 @@ class TogglePlugin(BasePlugin):
 
     def write_settings(self) -> Dict[str, Any]:
         return {}
+
+    def start_plugin(self):
+        pass
+
+    def stop_plugin(self):
+        pass

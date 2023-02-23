@@ -42,23 +42,22 @@ class GridPlugin(BasePlugin):
         self.plugin_state['grid_hidden'] = self.convert_str_bool(settings.get('grid_hidden', False))
         self.plugin_state['selector_hidden'] = self.convert_str_bool(settings.get('selector_hidden', False))
         self.plugin_state['grid_defined'] = self.convert_str_bool(settings.get('grid_defined', False))
+        self._x_divs = int(settings.get('x_divs', 5))
+        self._y_divs = int(settings.get('y_divs', 5))
         
-
-        if self.rubberBand:
-            self.rubberBand.close()
-            self.rubberBand = None
-        if self._grid:
-            self.remove_grid(self.parent.scene)
         
+    def start_plugin(self):
         if self.plugin_state['grid_defined']:
-            if not self.plugin_state['grid_hidden']:
-                self.paintBoxes(self.parent.scene)
-            if not self.plugin_state['selector_hidden']:
-                if not self.rubberBand:
-                    self.create_rubberband()
-                self.rubberBand.setGeometry(QRect(self.start, self.end).normalized())
-        
-                
+            self.paintBoxes(self.parent.scene)
+            self._grid.setVisible(not self.plugin_state['grid_hidden'])
+            self.create_rubberband()
+            self.rubberBand.setGeometry(QRect(self.start, self.end).normalized())
+            self.rubberBand.setVisible(not self.plugin_state['selector_hidden'])
+
+    def stop_plugin(self):
+        self.remove_grid(self.parent.scene)
+        if self.rubberBand:
+            self.rubberBand.destroy()
 
     def write_settings(self) -> Dict[str, Any]:
         settings_values = {}
@@ -68,25 +67,28 @@ class GridPlugin(BasePlugin):
         settings_values['grid_hidden'] = self.plugin_state['grid_hidden']
         settings_values['selector_hidden'] = self.plugin_state['selector_hidden']
         settings_values['grid_defined'] = self.plugin_state['grid_defined']
+        settings_values['x_divs'] = self._x_divs
+        settings_values['y_divs'] = self._y_divs
         return settings_values        
 
     def context_menu_entry(self):
 
         actions = []
         if self.plugin_state['grid_defined']:
-            if not self.rubberBand:
-                self.create_rubberband()
+            #if not self.rubberBand:
+            #    self.create_rubberband()
+            #    self.rubberBand.setVisible(self.plugin_state['selector_hidden'])
             self.hide_show_action = QAction('Selector Visible', self.parent, 
                                             checkable=True, checked=self.rubberBand.isVisible())
             self.hide_show_action.triggered.connect(self._toggle_selector)
             actions.append(self.hide_show_action)
-            if self._grid:
-                self.hide_show_grid_action = QAction('Grid Visible', self.parent,
+            #if self._grid:
+            self.hide_show_grid_action = QAction('Grid Visible', self.parent,
                                                      checkable=True, checked=self._grid.isVisible())
                 #self.select_grid_color_action = QAction('Change Grid color', self.parent)
-                self.hide_show_grid_action.triggered.connect(self._toggle_grid)
+            self.hide_show_grid_action.triggered.connect(self._toggle_grid)
                 #self.select_grid_color_action.triggered.connect(self._select_grid_color)
-                actions.extend([self.hide_show_grid_action]) #, self.select_grid_color_action])
+            actions.extend([self.hide_show_grid_action]) #, self.select_grid_color_action])
         
         self.start_drawing_grid_action = QAction('Draw grid', self.parent)
         self.start_drawing_grid_action.triggered.connect(self._start_grid)
@@ -144,9 +146,10 @@ class GridPlugin(BasePlugin):
 
     def remove_grid(self, scene: QGraphicsScene):
         if self._grid:
-            scene.removeItem(self._grid)
-            self._grid = None
-            self._grid_items = []
+            if self._grid.scene() == scene:
+                scene.removeItem(self._grid)
+                self._grid = None
+                self._grid_items = []
 
     def create_rubberband(self):
         self.rubberBand = ResizableRubberBand(self.parent)
