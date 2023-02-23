@@ -38,6 +38,13 @@ class BasePlugin(ABC):
     def write_settings(self) -> Dict[str, Any]:
         pass
 
+    @abstractmethod
+    def start_plugin(self):
+        pass
+
+    @abstractmethod
+    def stop_plugin(self):
+        pass
 
     def add_settings(self, parent=None) -> Optional[QGroupBox]:
         return None
