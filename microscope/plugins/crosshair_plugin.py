@@ -34,7 +34,14 @@ class CrossHairPlugin(BaseImagePlugin):
         self._always_centered = settings.get('always_centered', True)
         if isinstance(self._always_centered, str):
             self._always_centered = True if self._always_centered.lower() == 'true' else False
+        
+
+    def start_plugin(self):
         self._paint_crosshair(self.parent.scene)
+
+    def stop_plugin(self):
+        self._remove_crosshair(self.parent.scene)
+        
 
     def update_image_data(self, image):
         if self._always_centered:
@@ -45,12 +52,16 @@ class CrossHairPlugin(BaseImagePlugin):
 
         return image
 
-    def _paint_crosshair(self, scene: QGraphicsScene):
+    def _remove_crosshair(self, scene:QGraphicsScene):
         if self._hor_line:
-            scene.removeItem(self._hor_line)
+            if self._hor_line.scene() == scene:
+                scene.removeItem(self._hor_line)
         if self._vert_line:
-            scene.removeItem(self._vert_line)
+            if self._vert_line.scene() == scene:
+                scene.removeItem(self._vert_line)
 
+    def _paint_crosshair(self, scene: QGraphicsScene):
+        self._remove_crosshair(scene)
         pen = QPen(self._color)
         if self._always_centered:
             self._pos = QPoint(int(self.parent.view.width()/2), 

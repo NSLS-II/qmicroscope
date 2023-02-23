@@ -75,7 +75,12 @@ class ZoomPlugin(BaseImagePlugin):
 
     def read_settings(self, settings: Dict[str, Any]):
         self.crop = settings.get('crop', None)
-        
+    
+    def stop_plugin(self):
+        pass
+
+    def start_plugin(self):
+        pass
 
     def write_settings(self) -> Dict[str, Any]:
         return {'crop': self.crop}

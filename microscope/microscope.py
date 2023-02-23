@@ -69,9 +69,14 @@ class Microscope(QWidget):
             self.videoThread.setUrl(self.url)
             self.videoThread.setFPS(self.fps)
             self.videoThread.start()
+            for plugin in self.plugins:
+                plugin.start_plugin()
         elif self.videoThread.isRunning() and not start:
+            for plugin in self.plugins:
+                plugin.stop_plugin()
             self.videoThread.stop()
             self.videoThread.wait(500)
+            
         
     def eventFilter(self, obj, event):
         if obj is self.view.viewport():

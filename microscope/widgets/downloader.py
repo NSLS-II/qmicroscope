@@ -68,8 +68,9 @@ class VideoThread(QThread):
                 self.imageReady.emit(qimage)
             except urllib.error.URLError:
                 #print('Error in URL')
-                qimage = self.draw_message(f'Could not get data from: {self.url}')
-                self.imageReady.emit(qimage)
+                #qimage = self.draw_message(f'Could not get data from: {self.url}')
+                #self.imageReady.emit(qimage)
+                pass
 
         elif self.isMjpegFeed and self.mjpegCamera:
             retVal, currentFrame = self.mjpegCamera.read()
