@@ -72,6 +72,9 @@ class VideoThread(QThread):
             except TimeoutError:
                 qimage = self.draw_message(f'Timeout Error: {self.url}')
                 self.imageReady.emit(qimage)
+            except Exception as e:
+                qimage = self.draw_message(f'Exception {e}: {self.url}')
+                self.imageReady.emit(qimage) 
 
         elif self.isMjpegFeed and self.mjpegCamera:
             retVal, currentFrame = self.mjpegCamera.read()
