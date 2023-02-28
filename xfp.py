@@ -23,14 +23,14 @@ from microscope.microscope import Microscope
 from microscope.container import Container
 from microscope.settings import Settings
 from microscope.plugins import (ZoomPlugin, GridPlugin, PresetPlugin, ScalePlugin,
-                                TogglePlugin, CrossHairPlugin)
+                                TogglePlugin, CrossHairPlugin, RecordPlugin)
 
 class Form(QMainWindow):
     def __init__(self, parent=None):
         super(Form, self).__init__(parent)
         # Create widgets
         self.setWindowTitle("NSLS-II Microscope Widget")
-        plugins = [ZoomPlugin, GridPlugin, CrossHairPlugin, PresetPlugin, ScalePlugin, TogglePlugin]
+        plugins = [ZoomPlugin, GridPlugin, CrossHairPlugin, PresetPlugin, ScalePlugin, TogglePlugin, RecordPlugin]
         self.container = Container(self, plugins=plugins)
         self.container.count = 3
         self.container.size = [2, 2]
