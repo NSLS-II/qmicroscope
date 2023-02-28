@@ -182,7 +182,7 @@ class RecordPlugin(QObject):
 
     def read_settings(self, settings: Dict[str, Any]):
         self.fps = int(settings.get('fps', 5))
-        self.filename = Path(settings['path'])/Path(settings['stem'])
+        self.filename = Path(settings.get('path', Path.home())/Path(settings.get('stem', 'output')))
         self.hours_per_file = int(settings.get('hours_per_file', 1))
         self.number_of_files = int(settings.get('number_of_files',1))
         self.raw_image = True if settings.get('raw_image', 'true') == 'true' else False
@@ -276,7 +276,7 @@ class RecordPlugin(QObject):
         self.timestamp_color_widget = ColorButton(parent=parent, color=self.timestamp_color)
         self.timestamp_font_size_widget = QSpinBox()
         self.timestamp_font_size_widget.setRange(1, 100)
-        self.timestamp_font_size_widget.setValue(self.timestamp_font_size)
+        self.timestamp_font_size_widget.setValue(int(self.timestamp_font_size))
         hbox3 = QHBoxLayout()
         hbox3.addWidget(self.timestamp_color_widget)
         hbox3.addWidget(QLabel("Timestamp font size"))
