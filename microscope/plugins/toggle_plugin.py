@@ -2,18 +2,20 @@ from typing import Optional, Dict, Any, TYPE_CHECKING
 from qtpy.QtWidgets import QCheckBox
 from microscope.plugins.base_plugin import BasePlugin
 from qtpy.QtGui import QMouseEvent
+
 if TYPE_CHECKING:
     from microscope.microscope import Microscope
+
 
 class TogglePlugin(BasePlugin):
     def __init__(self, parent: "Microscope") -> None:
         super().__init__(parent)
         self.parent = parent
-        self.name = 'Toggle Plugin'
+        self.name = "Toggle Plugin"
         self.checkBox = QCheckBox(self.parent)
         self.checkBox.toggle()
         self.checkBoxProxy = self.parent.scene.addWidget(self.checkBox)
-        #self.checkBoxProxy.setPos(100,100)
+        # self.checkBoxProxy.setPos(100,100)
         self.checkBoxProxy.setZValue(1)
         self.checkBox.stateChanged.connect(self._toggle_cam)
 

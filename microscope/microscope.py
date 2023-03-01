@@ -1,26 +1,40 @@
 from collections.abc import Iterable
 from qtpy.QtCore import Signal, QByteArray, QPoint, QSize, QSettings, QEvent
-from qtpy.QtGui import (QImage, QPainter, 
-                        QContextMenuEvent, QMouseEvent, QPixmap)
-from qtpy.QtWidgets import (QWidget, QMenu, QAction, QGraphicsView,
-                            QGraphicsScene, QGraphicsPixmapItem, QVBoxLayout)
+from qtpy.QtGui import QImage, QPainter, QContextMenuEvent, QMouseEvent, QPixmap
+from qtpy.QtWidgets import (
+    QWidget,
+    QMenu,
+    QAction,
+    QGraphicsView,
+    QGraphicsScene,
+    QGraphicsPixmapItem,
+    QVBoxLayout,
+)
 from typing import List, Any, Dict, Optional
 from .widgets.downloader import VideoThread
 from .plugins.base_plugin import BasePlugin
 from .plugin_settings import PluginSettingsDialog
 
+
 class Microscope(QWidget):
     roiClicked: Signal = Signal(int, int)
     clicked_url: Signal = Signal(str)
-    
-    def __init__(self, parent:Optional[QWidget]=None, 
-                 viewport:bool=True, plugins: List[BasePlugin]=list()) -> None:
+    mouse_press_signal: Signal = Signal(object)
+    mouse_move_signal: Signal = Signal(object)
+    mouse_release_signal: Signal = Signal(object)
+
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        viewport: bool = True,
+        plugins: List[BasePlugin] = list(),
+    ) -> None:
         super(Microscope, self).__init__(parent)
         self.plugin_classes = plugins
         self.viewport = viewport
         self.setMinimumWidth(300)
         self.setMinimumHeight(300)
-        self.image = QImage('image.jpg')
+        self.image = QImage("image.jpg")
         self.pixmap = QGraphicsPixmapItem(None)
         self.scene = QGraphicsScene(self)
         self.view = QGraphicsView(self.scene)
@@ -36,35 +50,38 @@ class Microscope(QWidget):
         self.color: bool = False
         self.fps: int = 5
         self.scale: List[int] = []
-        
-        self.url: str = 'http://localhost:8080/output.jpg'
 
-        #self.downloader = Downloader(self)
-        #self.downloader.imageReady.connect(self.updateImageData)
+        self.url: str = "http://localhost:8080/output.jpg"
+
+        # self.downloader = Downloader(self)
+        # self.downloader.imageReady.connect(self.updateImageData)
         self.videoThread = VideoThread(fps=self.fps, url=self.url, parent=self)
         self.videoThread.imageReady.connect(self.updateImageData)
 
-        #self.timer = QTimer(self)
-        #self.timer.timeout.connect(self.downloader.downloadData)
+        # self.timer = QTimer(self)
+        # self.timer.timeout.connect(self.downloader.downloadData)
 
         self.plugins: List[BasePlugin] = []
         for plugin_cls in self.plugin_classes:
             self.plugins.append(plugin_cls(self))
 
-        self.view.viewport().installEventFilter(self)
+        for plugin in self.plugins:
+            self.mouse_press_signal.connect(plugin.mouse_press_event)
+            self.mouse_move_signal.connect(plugin.mouse_move_event)
+            self.mouse_release_signal.connect(plugin.mouse_release_event)
 
+        self.view.viewport().installEventFilter(self)
 
     def updatedImageSize(self) -> None:
         if self.image.size() != self.minimumSize():
             self.setMinimumSize(self.image.size())
             self.center = QPoint(
-                int(self.image.size().width() / 2), 
-                int(self.image.size().height() / 2)
+                int(self.image.size().width() / 2), int(self.image.size().height() / 2)
             )
 
-    def acquire(self, start: bool=True) -> None:
-        #self.downloader.setUrl(self.url)
-        #print(self.url)
+    def acquire(self, start: bool = True) -> None:
+        # self.downloader.setUrl(self.url)
+        # print(self.url)
         if start:
             self.videoThread.setUrl(self.url)
             self.videoThread.setFPS(self.fps)
@@ -76,8 +93,7 @@ class Microscope(QWidget):
                 plugin.stop_plugin()
             self.videoThread.stop()
             self.videoThread.wait(500)
-            
-        
+
     def eventFilter(self, obj, event):
         if obj is self.view.viewport():
             if event.type() == QEvent.MouseButtonPress:
@@ -117,44 +133,39 @@ class Microscope(QWidget):
         self.view.translate(delta.x(), delta.y())
 
     def mouse_press_event(self, a0: QMouseEvent):
-        
+
         if self.viewport:
             self.clicked_url.emit(self.settings_group)
-        
-        for plugin in self.plugins:
-            plugin.mouse_press_event(a0)
+
+        self.mouse_press_signal.emit(a0)
 
     def mouse_move_event(self, a0: QMouseEvent):
-        for plugin in self.plugins:
-            plugin.mouse_move_event(a0)
-        
+        self.mouse_move_signal.emit(a0)
+
     def mouse_release_event(self, a0: QMouseEvent) -> None:
-        for plugin in self.plugins:
-            plugin.mouse_release_event(a0) 
-    
+        self.mouse_release_signal.emit(a0)
+
     def contextMenuEvent(self, a0: QContextMenuEvent) -> None:
-        """Add entries into the context menu based on plugins used
-        """
+        """Add entries into the context menu based on plugins used"""
         super().contextMenuEvent(a0)
         self.menu = QMenu(self)
-        config_plugins_action = QAction('Configure Plugins', self)
+        config_plugins_action = QAction("Configure Plugins", self)
         config_plugins_action.triggered.connect(self._config_plugins)
         self.addMenuItem(config_plugins_action)
-        
+
         for plugin in self.plugins:
             self.menu.addSection(plugin.name)
             context_menu_entry = plugin.context_menu_entry()
-            
+
             if isinstance(context_menu_entry, Iterable):
                 for item in context_menu_entry:
                     self.addMenuItem(item)
             else:
                 self.addMenuItem(context_menu_entry)
-        
-        
+
         self.menu.move(a0.globalPos())
         self.menu.show()
-    
+
     def addMenuItem(self, item):
         if isinstance(item, QAction):
             self.menu.addAction(item)
@@ -163,20 +174,18 @@ class Microscope(QWidget):
 
     def _config_plugins(self):
         plugin_settings_dialog = PluginSettingsDialog(parent=self, plugins=self.plugins)
-        
 
     def sizeHint(self) -> QSize:
         return QSize(400, 400)
-        
 
     def updateImageData(self, image: QImage):
-        """ Triggered when the new image is ready, update the view. """
+        """Triggered when the new image is ready, update the view."""
         if isinstance(image, QByteArray):
-            self.image.loadFromData(image, 'JPG')
+            self.image.loadFromData(image, "JPG")
         else:
             self.image = image
-        
-        #Loop through plugins to process video image
+
+        # Loop through plugins to process video image
         for plugin in self.plugins:
             if plugin.updates_image:
                 self.image = plugin.update_image_data(self.image)
@@ -188,7 +197,7 @@ class Microscope(QWidget):
                 self.image = self.image.scaledToHeight(self.scale[1])
 
         self.updatedImageSize()
-        #self.view.setFixedSize(self.image.size())
+        # self.view.setFixedSize(self.image.size())
         pixmap = QPixmap.fromImage(self.image)
         self.pixmap.setPixmap(pixmap)
         self.scene.setSceneRect(self.pixmap.boundingRect())
@@ -200,8 +209,6 @@ class Microscope(QWidget):
         self.view.setGeometry(rect)
         self.update()
 
-        
-
     def resizeImage(self):
         if len(self.scale) == 2:
             if self.scale[0] > 0:
@@ -210,49 +217,48 @@ class Microscope(QWidget):
                 self.image = self.image.scaledToHeight(self.scale[1])
 
     def readFromDict(self, settings: Dict[Any, Any]):
-        """ Read the settings from a Python dict. """
-        if settings.has_key('url'):
-            self.url = settings['url']
-        if settings.has_key('fps'):
-            self.fps = settings['fps']
-        if settings.has_key('xDivs'):
-            self.xDivs = settings['xDivs']
-        if settings.has_key('yDivs'):
-            self.yDivs = settings['yDivs']
-        if settings.has_key('color'):
-            self.color = settings['color']
-        if settings.has_key('scaleW'):
-            self.scale = [ settings['scaleW'], 200 ]
-        if settings.has_key('scaleH'):
+        """Read the settings from a Python dict."""
+        if settings.has_key("url"):
+            self.url = settings["url"]
+        if settings.has_key("fps"):
+            self.fps = settings["fps"]
+        if settings.has_key("xDivs"):
+            self.xDivs = settings["xDivs"]
+        if settings.has_key("yDivs"):
+            self.yDivs = settings["yDivs"]
+        if settings.has_key("color"):
+            self.color = settings["color"]
+        if settings.has_key("scaleW"):
+            self.scale = [settings["scaleW"], 200]
+        if settings.has_key("scaleH"):
             if len(self.scale) == 2:
-                self.scale[1] = 200 #settings['scaleW']
+                self.scale[1] = 200  # settings['scaleW']
             else:
-                self.scale = [ 200, settings['scaleW'] ]
-
+                self.scale = [200, settings["scaleW"]]
 
     def writeToDict(self):
-        """ Write the widget's settings to a Python dict. """
+        """Write the widget's settings to a Python dict."""
         settings = {
-            'url': self.url,
-            'fps': self.fps,
-            'xDivs': self.xDivs,
-            'yDivs': self.yDivs,
-            'color': self.color
+            "url": self.url,
+            "fps": self.fps,
+            "xDivs": self.xDivs,
+            "yDivs": self.yDivs,
+            "color": self.color,
         }
         if len(self.scale) == 2:
-            settings['scaleW'] = self.scale[0]
-            settings['scaleH'] = self.scale[1]
+            settings["scaleW"] = self.scale[0]
+            settings["scaleH"] = self.scale[1]
         return settings
 
     def readSettings(self, settings: QSettings):
-        """ Read the settings for this microscope instance. """
-        self.settings_group = settings.group() # Keep a copy
+        """Read the settings for this microscope instance."""
+        self.settings_group = settings.group()  # Keep a copy
         self.settings = settings
-        self.url = settings.value('url', 'http://localhost:9998/jpg/image.jpg')
-        self.fps = settings.value('fps', 5, type=int)
-        self.xDivs = settings.value('xDivs', 5, type=int)
-        self.yDivs = settings.value('yDivs', 5, type=int)
-        self.color = settings.value('color', False, type=bool)
+        self.url = settings.value("url", "http://localhost:9998/jpg/image.jpg")
+        self.fps = settings.value("fps", 5, type=int)
+        self.xDivs = settings.value("xDivs", 5, type=int)
+        self.yDivs = settings.value("yDivs", 5, type=int)
+        self.color = settings.value("color", False, type=bool)
 
         for plugin in self.plugins:
             settings.beginGroup(plugin.name)
@@ -262,15 +268,18 @@ class Microscope(QWidget):
             plugin.read_settings(settings_values)
             settings.endGroup()
 
-        if settings.value('scaleW', -1, type=int) >= 0 and self.viewport:
-            self.scale = [ settings.value('scaleW', 200, type=int),
-                           settings.value('scaleH', 200, type=int) ]
+        if settings.value("scaleW", -1, type=int) >= 0 and self.viewport:
+            self.scale = [
+                settings.value("scaleW", 200, type=int),
+                settings.value("scaleH", 200, type=int),
+            ]
             print(f"Reading {self.settings_group} {self.scale}")
             self.resizeImage()
-        
 
-    def writeSettings(self, settings: Optional[QSettings] = None, settings_group: Optional[str] = None):
-        """ Write the settings for this microscope instance. """
+    def writeSettings(
+        self, settings: Optional[QSettings] = None, settings_group: Optional[str] = None
+    ):
+        """Write the settings for this microscope instance."""
         if not settings:
             settings = self.settings
         else:
@@ -280,18 +289,18 @@ class Microscope(QWidget):
             settings_group = self.settings_group
         else:
             self.settings_group = settings_group
-        
+
         if settings_group:
             settings.beginGroup(settings_group)
-            settings.setValue('url', self.url)
-            settings.setValue('fps', self.fps)
-            settings.setValue('xDivs', self.xDivs)
-            settings.setValue('yDivs', self.yDivs)
-            settings.setValue('color', self.color)
+            settings.setValue("url", self.url)
+            settings.setValue("fps", self.fps)
+            settings.setValue("xDivs", self.xDivs)
+            settings.setValue("yDivs", self.yDivs)
+            settings.setValue("color", self.color)
             if len(self.scale) == 2:
                 print(f"Writing {settings_group} {self.scale}")
-                settings.setValue('scaleW', self.scale[0])
-                settings.setValue('scaleH', self.scale[1])
+                settings.setValue("scaleW", self.scale[0])
+                settings.setValue("scaleH", self.scale[1])
 
             for plugin in self.plugins:
                 settings.beginGroup(plugin.name)

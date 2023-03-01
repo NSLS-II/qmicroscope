@@ -32,14 +32,14 @@ class Form(QMainWindow):
         # Create three microscopes in a list, and then lay them out.
         self.microscopes = [Microscope(self), Microscope(self), Microscope(self)]
         self.microscope = self.microscopes[0]
-        self.names = ['Bob (0)', 'Alice (1)', 'Terry (2)']
+        self.names = ["Bob (0)", "Alice (1)", "Terry (2)"]
         self.buttons = []
 
         # Create a form with some controls
         self.selector = QComboBox()
         for m, n in zip(self.microscopes, self.names):
             self.selector.addItem(n, m)
-            self.buttons.append(QPushButton(f'Start {n}'))
+            self.buttons.append(QPushButton(f"Start {n}"))
 
         self.fps = QSpinBox()
         self.fps.setRange(1, 30)
@@ -52,18 +52,18 @@ class Form(QMainWindow):
         self.yDivs.setValue(5)
         self.color = QCheckBox()
 
-        self.url = QLineEdit('http://localhost:9998/jpg/image.jpg')
+        self.url = QLineEdit("http://localhost:9998/jpg/image.jpg")
 
-        self.button = QPushButton('Start')
+        self.button = QPushButton("Start")
 
         # Lay it out
         formLayout = QFormLayout()
-        formLayout.addRow('Active Camera:', self.selector)
-        formLayout.addRow('Camera URL:', self.url)
-        formLayout.addRow('Frame Rate:', self.fps)
-        formLayout.addRow('X Divisions:', self.xDivs)
-        formLayout.addRow('Y Divisions:', self.yDivs)
-        formLayout.addRow('Color boxes:', self.color)
+        formLayout.addRow("Active Camera:", self.selector)
+        formLayout.addRow("Camera URL:", self.url)
+        formLayout.addRow("Frame Rate:", self.fps)
+        formLayout.addRow("X Divisions:", self.xDivs)
+        formLayout.addRow("Y Divisions:", self.yDivs)
+        formLayout.addRow("Color boxes:", self.color)
 
         # Create layout and add widgets
         layout = QVBoxLayout()
@@ -79,7 +79,7 @@ class Form(QMainWindow):
         for b in self.buttons:
             buttonBox.addWidget(b)
         layout.addLayout(buttonBox)
-    
+
         # Set main windows widget using our central layout
         widget = QWidget()
         widget.setLayout(layout)
@@ -105,7 +105,7 @@ class Form(QMainWindow):
         settings = QSettings()
         self.writeSettings(settings)
         event.accept()
-    
+
     def selectionChanged(self, index):
         # Change the active microscope, need to define what this means...
         self.updateMicroscope()
@@ -115,7 +115,7 @@ class Form(QMainWindow):
     def button0Pressed(self):
         # Currently being a little lame - only update state on start/stop.
         self.buttonPressed(0)
-    
+
     def button1Pressed(self):
         # Currently being a little lame - only update state on start/stop.
         self.buttonPressed(1)
@@ -126,16 +126,16 @@ class Form(QMainWindow):
 
     def buttonPressed(self, index):
         # Currently being a little lame - only update state on start/stop.
-        if self.buttons[index].text() == f'Start {self.names[index]}':
+        if self.buttons[index].text() == f"Start {self.names[index]}":
             self.updateMicroscope()
             self.microscopes[index].acquire(True)
-            self.buttons[index].setText(f'Stop {self.names[index]}')
+            self.buttons[index].setText(f"Stop {self.names[index]}")
         else:
             self.microscopes[index].acquire(False)
-            self.buttons[index].setText(f'Start {self.names[index]}')
+            self.buttons[index].setText(f"Start {self.names[index]}")
 
     def onRoiClicked(self, x, y):
-        print(f'ROI: {x}, {y}')
+        print(f"ROI: {x}, {y}")
 
     def updateMicroscope(self):
         self.microscope.url = self.url.text()
@@ -152,47 +152,47 @@ class Form(QMainWindow):
         self.color.setChecked(self.microscope.color)
 
     def readSettings(self, settings):
-        """ Load the application's settings. """
-        settings.beginGroup('MainWindow')
-        self.resize(settings.value('size', QSize(400, 400)))
-        self.move(settings.value('pos', QPoint(200, 200)))
-        settings.beginGroup('Microscope0')
+        """Load the application's settings."""
+        settings.beginGroup("MainWindow")
+        self.resize(settings.value("size", QSize(400, 400)))
+        self.move(settings.value("pos", QPoint(200, 200)))
+        settings.beginGroup("Microscope0")
         self.microscopes[0].readSettings(settings)
         # Also need to restore the settings to the form elements.
         self.updateForm()
         settings.endGroup()
-        settings.beginGroup('Microscope1')
+        settings.beginGroup("Microscope1")
         self.microscopes[1].readSettings(settings)
         settings.endGroup()
-        settings.beginGroup('Microscope2')
+        settings.beginGroup("Microscope2")
         self.microscopes[2].readSettings(settings)
         settings.endGroup()
         settings.endGroup()
 
     def writeSettings(self, settings):
-        """ Save the applications's settings persistently. """
-        settings.beginGroup('MainWindow')
-        settings.setValue('size', self.size())
-        settings.setValue('pos', self.pos())
+        """Save the applications's settings persistently."""
+        settings.beginGroup("MainWindow")
+        settings.setValue("size", self.size())
+        settings.setValue("pos", self.pos())
         self.updateMicroscope()
-        settings.beginGroup('Microscope0')
+        settings.beginGroup("Microscope0")
         self.microscopes[0].writeSettings(settings)
-        print(f'Microscope0: {self.microscopes[0].writeToDict()}')
+        print(f"Microscope0: {self.microscopes[0].writeToDict()}")
         settings.endGroup()
-        settings.beginGroup('Microscope1')
+        settings.beginGroup("Microscope1")
         self.microscopes[1].writeSettings(settings)
         settings.endGroup()
-        settings.beginGroup('Microscope2')
+        settings.beginGroup("Microscope2")
         self.microscopes[2].writeSettings(settings)
         settings.endGroup()
         settings.endGroup()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Set up some application basics for saving settings
-    QApplication.setOrganizationName('BNL')
-    QApplication.setOrganizationDomain('bnl.gov')
-    QApplication.setApplicationName('LIXMicroscope')
+    QApplication.setOrganizationName("BNL")
+    QApplication.setOrganizationDomain("bnl.gov")
+    QApplication.setApplicationName("LIXMicroscope")
 
     # Create the Qt Application
     app = QApplication(sys.argv)

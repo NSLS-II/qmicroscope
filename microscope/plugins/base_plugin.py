@@ -4,13 +4,13 @@ from qtpy.QtGui import QMouseEvent, QImage
 from qtpy.QtCore import QSettings
 from qtpy.QtWidgets import QWidget, QGroupBox
 
-class BasePlugin(ABC):
 
+class BasePlugin(ABC):
     def __init__(self, parent) -> None:
-        self.name = 'Generic Plugin'
+        self.name = "Generic Plugin"
         self.updates_image = False
         self.parent = parent
-    
+
     @abstractmethod
     def context_menu_entry(self):
         pass
@@ -52,8 +52,9 @@ class BasePlugin(ABC):
     def save_settings(self, settings_groupbox) -> None:
         pass
 
+
 class BaseImagePlugin(BasePlugin):
     def __init__(self, parent) -> None:
         super().__init__(parent)
-        self.name = 'Base Image Plugin'
+        self.name = "Base Image Plugin"
         self.updates_image = True

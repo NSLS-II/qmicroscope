@@ -24,6 +24,7 @@ from microscope.container import Container
 from microscope.settings import Settings
 from microscope.plugins.record_plugin import RecordPlugin
 
+
 class Form(QMainWindow):
     def __init__(self, parent=None):
         super(Form, self).__init__(parent)
@@ -33,10 +34,10 @@ class Form(QMainWindow):
         self.container.count = 3
         self.container.size = [2, 2]
         self.microscope = self.container.microscope(0)
-        #self.microscope = Microscope(self)
+        # self.microscope = Microscope(self)
 
-        self.startButton = QPushButton('Start')
-        self.settingsButton = QPushButton('Settings')
+        self.startButton = QPushButton("Start")
+        self.settingsButton = QPushButton("Settings")
 
         # Create layout and add widgets
         layout = QVBoxLayout()
@@ -47,7 +48,6 @@ class Form(QMainWindow):
         hButtonBox.addStretch()
         layout.addLayout(hButtonBox)
         layout.addWidget(self.container)
-        
 
         # Set main windows widget using our central layout
         widget = QWidget()
@@ -63,7 +63,7 @@ class Form(QMainWindow):
             self.microscope.roiClicked.connect(self.onRoiClicked)
 
         # Read the settings and persist them
-        settings = QSettings('NSLS2', 'main')
+        settings = QSettings("NSLS2", "main")
         self.readSettings(settings)
 
         self.settingsDialog = Settings(self)
@@ -71,49 +71,49 @@ class Form(QMainWindow):
 
     # event : QCloseEvent
     def closeEvent(self, event):
-        settings = QSettings('NSLS2', 'main')
+        settings = QSettings("NSLS2", "main")
         self.writeSettings(settings)
         event.accept()
 
     def startButtonPressed(self):
         # Currently being a little lame - only update state on start/stop.
-        print('Button pressed!', self.startButton.text())
-        if self.startButton.text() == 'Start':
+        print("Button pressed!", self.startButton.text())
+        if self.startButton.text() == "Start":
             self.container.start(True)
-            self.startButton.setText('Stop')
+            self.startButton.setText("Stop")
         else:
             self.container.start(False)
-            self.startButton.setText('Start')
+            self.startButton.setText("Start")
 
     def settingsButtonClicked(self):
         # Open the settings dialog.
         self.settingsDialog.show()
 
     def onRoiClicked(self, x, y):
-        print(f'ROI: {x}, {y}')
+        print(f"ROI: {x}, {y}")
 
     def readSettings(self, settings):
-        """ Load the application's settings. """
-        settings.beginGroup('MainWindow')
-        self.resize(settings.value('size', QSize(400, 400)))
-        self.move(settings.value('pos', QPoint(200, 200)))
+        """Load the application's settings."""
+        settings.beginGroup("MainWindow")
+        self.resize(settings.value("size", QSize(400, 400)))
+        self.move(settings.value("pos", QPoint(200, 200)))
         self.container.readSettings(settings)
         settings.endGroup()
 
     def writeSettings(self, settings):
-        """ Save the applications's settings persistently. """
-        settings.beginGroup('MainWindow')
-        settings.setValue('size', self.size())
-        settings.setValue('pos', self.pos())
+        """Save the applications's settings persistently."""
+        settings.beginGroup("MainWindow")
+        settings.setValue("size", self.size())
+        settings.setValue("pos", self.pos())
         self.container.writeSettings(settings)
         settings.endGroup()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Set up some application basics for saving settings
-    QApplication.setOrganizationName('BNL')
-    QApplication.setOrganizationDomain('bnl.gov')
-    QApplication.setApplicationName('QCamera')
+    QApplication.setOrganizationName("BNL")
+    QApplication.setOrganizationDomain("bnl.gov")
+    QApplication.setApplicationName("QCamera")
 
     # Create the Qt Application
     app = QApplication(sys.argv)

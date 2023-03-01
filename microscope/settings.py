@@ -14,6 +14,7 @@ from qtpy.QtWidgets import (
 from .container import Container
 from .microscope import Microscope
 
+
 class Settings(QDialog):
     roiClicked = Signal(int, int)
 
@@ -45,27 +46,27 @@ class Settings(QDialog):
         self.yDivs.setRange(1, 50)
         self.yDivs.setValue(5)
         self.color = QCheckBox()
-        #self.container = None
-        #self.microscope: "Microscope|None" = None
+        # self.container = None
+        # self.microscope: "Microscope|None" = None
 
-        self.url = QLineEdit('http://localhost:9998/jpg/image.jpg')
-        self.okButton = QPushButton('OK')
-        self.applyButton = QPushButton('Apply')
-        self.cancelButton = QPushButton('Cancel')
+        self.url = QLineEdit("http://localhost:9998/jpg/image.jpg")
+        self.okButton = QPushButton("OK")
+        self.applyButton = QPushButton("Apply")
+        self.cancelButton = QPushButton("Cancel")
 
         # Lay it out
         formLayout = QFormLayout()
-        formLayout.addRow('Camera:', self.selector)
+        formLayout.addRow("Camera:", self.selector)
         rowsCols = QHBoxLayout()
         rowsCols.addWidget(self.cameraCols)
         rowsCols.addWidget(self.cameraRows)
-        formLayout.addRow('Cameras:', rowsCols)
-        formLayout.addRow('Camera URL:', self.url)
-        formLayout.addRow('Image Scale:', self.scale)
-        formLayout.addRow('Frame Rate:', self.fps)
-        formLayout.addRow('X Divisions:', self.xDivs)
-        formLayout.addRow('Y Divisions:', self.yDivs)
-        formLayout.addRow('Color boxes:', self.color)
+        formLayout.addRow("Cameras:", rowsCols)
+        formLayout.addRow("Camera URL:", self.url)
+        formLayout.addRow("Image Scale:", self.scale)
+        formLayout.addRow("Frame Rate:", self.fps)
+        formLayout.addRow("X Divisions:", self.xDivs)
+        formLayout.addRow("Y Divisions:", self.yDivs)
+        formLayout.addRow("Color boxes:", self.color)
 
         # Create layout and add widgets
         layout = QVBoxLayout()
@@ -101,19 +102,19 @@ class Settings(QDialog):
     def okClicked(self):
         self.updateMicroscope()
         self.accept()
-    
+
     def applyClicked(self):
         self.updateMicroscope()
-    
+
     def cancelClicked(self):
         self.reject()
-    
+
     def updateCameraSelect(self):
         # Iterate over the microscopes and create entries in the select.
         self.selector.clear()
         for i in range(self.container.count):
-            #print(f'doing element {i}')
-            self.selector.addItem(f'Camera {i + 1}', i)
+            # print(f'doing element {i}')
+            self.selector.addItem(f"Camera {i + 1}", i)
         self.cameraCols.setValue(self.container.size[0])
         self.cameraRows.setValue(self.container.size[1])
 
@@ -124,15 +125,15 @@ class Settings(QDialog):
 
     def cameraColsChanged(self, value):
         if self.container is None:
-            print('Error, no active container.')
+            print("Error, no active container.")
             return
         self.container.size = [value, self.container.size[1]]
         self.updateCameraSelect()
         self.container.update()
-    
+
     def cameraRowsChanged(self, value):
         if self.container is None:
-            print('Error, no active container.')
+            print("Error, no active container.")
             return
         self.container.size = [self.container.size[0], value]
         self.updateCameraSelect()
@@ -140,13 +141,13 @@ class Settings(QDialog):
 
     def updateMicroscope(self):
         if not self.microscope:
-            return 
+            return
         self.microscope.url = self.url.text()
         self.microscope.fps = self.fps.value()
         self.microscope.xDivs = self.xDivs.value()
         self.microscope.yDivs = self.yDivs.value()
         self.microscope.color = self.color.isChecked()
-        self.microscope.scale = [ self.scale.value(), 0 ]
+        self.microscope.scale = [self.scale.value(), 0]
         self.microscope.update()
 
     def updateForm(self):
@@ -159,5 +160,3 @@ class Settings(QDialog):
         self.color.setChecked(self.microscope.color)
         if len(self.microscope.scale) > 0:
             self.scale.setValue(self.microscope.scale[0])
-
-
