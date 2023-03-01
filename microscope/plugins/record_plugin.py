@@ -120,6 +120,8 @@ class RecordPlugin(QObject):
             if (datetime.now()-self.start_time).seconds >= 3600*self.hours_per_file:
                 # Stop recording after x hours
                 self._record()
+                # Restart recording
+                self._record()
             
             if self.raw_image:
                 recorded_image = image.copy()
