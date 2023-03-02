@@ -217,7 +217,7 @@ class RecordPlugin(QObject):
         self.timestamp_color = settings.get(
             "timestamp_color", QColor.fromRgb(0, 255, 0)
         )
-        self.timestamp_font_size = settings.get("timestamp_font_size", 12)
+        self.timestamp_font_size = int(settings.get("timestamp_font_size", 12))
         self.width = int(settings.get("image_width", 480))
 
     def write_settings(self) -> Dict[str, Any]:
