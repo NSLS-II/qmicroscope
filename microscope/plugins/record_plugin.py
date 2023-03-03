@@ -199,7 +199,7 @@ class RecordPlugin(QObject):
             self.filename.parent.glob(f"{self.filename.stem}*.{self.file_extension}")
         )
         if len(files_found) > self.number_of_files:
-            files_found = sorted(files_found, key=lambda f: f.stat().st_mtime)
+            files_found = sorted(files_found, key=lambda f: f.stat().st_mtime, reverse=True)
             files_to_delete = files_found[self.number_of_files :]
             print(f"Files to delete: {files_to_delete}")
             for f in files_to_delete:
