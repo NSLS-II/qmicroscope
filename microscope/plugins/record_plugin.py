@@ -105,7 +105,7 @@ class RecordPlugin(QObject):
     def qimage_to_mat(self, incomingImage: QImage):
         """Converts a QImage into an opencv MAT format"""
 
-        # incomingImage = incomingImage.convertToFormat(QImage.Format.Format_RGB888)
+        incomingImage = incomingImage.convertToFormat(QImage.Format.Format_RGB888)
         incomingImage = incomingImage.scaledToWidth(self.width)
         self.height = incomingImage.height()
 
