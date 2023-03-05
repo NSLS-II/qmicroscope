@@ -8,13 +8,13 @@ from qtpy.QtWidgets import (
     QLabel,
     QSpinBox,
     QLineEdit,
-    QCheckBox,
+    QCheckBox
 )
 from qtpy.QtGui import QImage, QPainter, QPen, QFont, QColor
 from microscope.plugins.base_plugin import BaseImagePlugin
 from microscope.widgets.color_button import ColorButton
 from qtpy.QtGui import QMouseEvent
-from qtpy.QtCore import QThread, Signal, QObject, Qt
+from qtpy.QtCore import QThread, Signal, QObject, Qt, QTimer
 import cv2 as cv
 import numpy as np
 from pathlib import Path
@@ -34,6 +34,9 @@ class RecorderThread(QThread):
         self.fps = 5
         self.fourcc = cv.VideoWriter_fourcc(*"avc1")
         self.path = "output.mp4"
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.write_frame)
+        self.current_frame = None
 
     def start(self, path, fourcc, fps, width, height):
         self.set_params(path, fourcc, fps, width, height)
@@ -53,11 +56,13 @@ class RecorderThread(QThread):
         self.path = path
 
     def _setup_recorder(self):
+        self.timer.start(int(1000/self.fps))
         self.video_recorder.open(
             str(self.path), self.fourcc, float(self.fps), (self.width, self.height)
         )
 
     def stop(self):
+        self.timer.stop()
         self.video_recorder.release()
         self.record = False
 
@@ -65,15 +70,18 @@ class RecorderThread(QThread):
         while self.record:
             continue
 
-    def write_frame(self, frame):
+    def handle_frame(self, frame):
         if frame.shape[0] != self.height or frame.shape[1] != self.width:
             self.height = frame.shape[0]
             self.width = frame.shape[1]
             self.video_recorder.release()
             self._setup_recorder()
         # print(f'Frame shape: {frame.shape} w,d: {self.width} {self.height}')
-        if self.video_recorder.isOpened():
-            self.video_recorder.write(frame)
+        self.current_frame = frame
+
+    def write_frame(self):
+        if self.video_recorder.isOpened() and self.current_frame is not None:
+            self.video_recorder.write(self.current_frame)
 
 
 class RecordPlugin(QObject):
@@ -95,7 +103,7 @@ class RecordPlugin(QObject):
         self.hours_per_file = 12
         self.number_of_files = 6
         self.video_recorder_thread = RecorderThread()
-        self.image_ready.connect(self.video_recorder_thread.write_frame)
+        self.image_ready.connect(self.video_recorder_thread.handle_frame)
         self.updates_image = True
         self.raw_image = True
         self.timestamp = False
@@ -253,7 +261,7 @@ class RecordPlugin(QObject):
 
         ## Start row
         self.fps_widget = QSpinBox()
-        self.fps_widget.setRange(1, 30)
+        self.fps_widget.setRange(1, self.parent().fps)
         self.fps_widget.setValue(self.fps)
 
         self.image_width_widget = QSpinBox()

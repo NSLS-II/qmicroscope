@@ -37,7 +37,7 @@ class Settings(QDialog):
         self.scale.setSingleStep(10)
         self.scale.setValue(100)
         self.fps = QSpinBox()
-        self.fps.setRange(1, 30)
+        self.fps.setRange(1, 60)
         self.fps.setValue(5)
         self.xDivs = QSpinBox()
         self.xDivs.setRange(1, 50)
