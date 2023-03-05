@@ -22,26 +22,8 @@ class TogglePlugin(BasePlugin):
     def _toggle_cam(self, state):
         self.parent.acquire(state)
 
-    def mouse_move_event(self, event: QMouseEvent):
-        pass
-
-    def mouse_press_event(self, event: QMouseEvent):
-        pass
-
-    def mouse_release_event(self, event: QMouseEvent):
-        pass
-
     def context_menu_entry(self):
         return []
 
-    def read_settings(self, settings: Dict[str, Any]):
-        pass
-
     def write_settings(self) -> Dict[str, Any]:
         return {}
-
-    def start_plugin(self):
-        pass
-
-    def stop_plugin(self):
-        pass

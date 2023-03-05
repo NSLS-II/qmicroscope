@@ -40,12 +40,6 @@ class PresetPlugin(BasePlugin):
 
         return actions
 
-    def start_plugin(self):
-        pass
-
-    def stop_plugin(self):
-        pass
-
     def read_settings(self, settings: Dict[str, Any]):
         self.presets = settings
 
@@ -72,12 +66,3 @@ class PresetPlugin(BasePlugin):
         for plugin in self.parent.plugins:
             if plugin != self and plugin.name in preset_values:
                 plugin.read_settings(preset_values[plugin.name])
-
-    def mouse_move_event(self, event: QMouseEvent):
-        pass
-
-    def mouse_press_event(self, event: QMouseEvent):
-        pass
-
-    def mouse_release_event(self, event: QMouseEvent):
-        pass

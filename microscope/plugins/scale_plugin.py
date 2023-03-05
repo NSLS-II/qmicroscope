@@ -109,15 +109,6 @@ class ScalePlugin(BaseImagePlugin):
         actions.append(visible_action)
         return actions
 
-    def mouse_press_event(self, event: QMouseEvent):
-        pass
-
-    def mouse_move_event(self, event: QMouseEvent):
-        pass
-
-    def mouse_release_event(self, event: QMouseEvent):
-        pass
-
     def read_settings(self, settings: Dict[str, Any]):
         self._color = settings.get("color", self._color)
         self._pos = settings.get("pos", self._pos)

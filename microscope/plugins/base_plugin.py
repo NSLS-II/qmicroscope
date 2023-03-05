@@ -1,48 +1,38 @@
-from typing import Dict, Any, List, Optional
-from abc import ABC, abstractmethod
+from typing import Dict, Any, Optional, List
 from qtpy.QtGui import QMouseEvent, QImage
-from qtpy.QtCore import QSettings
-from qtpy.QtWidgets import QWidget, QGroupBox
+from qtpy.QtWidgets import QGroupBox, QAction
 
 
-class BasePlugin(ABC):
+class BasePlugin:
     def __init__(self, parent) -> None:
         self.name = "Generic Plugin"
         self.updates_image = False
         self.parent = parent
 
-    @abstractmethod
-    def context_menu_entry(self):
-        pass
+    def context_menu_entry(self) -> List[QAction]:
+        return []
 
     def update_image_data(self, image: QImage):
         return image
 
-    @abstractmethod
     def mouse_press_event(self, event: QMouseEvent):
         pass
 
-    @abstractmethod
     def mouse_move_event(self, event: QMouseEvent):
         pass
 
-    @abstractmethod
     def mouse_release_event(self, event: QMouseEvent):
         pass
 
-    @abstractmethod
     def read_settings(self, settings: Dict[str, Any]):
         pass
 
-    @abstractmethod
     def write_settings(self) -> Dict[str, Any]:
-        pass
+        return {}
 
-    @abstractmethod
     def start_plugin(self):
         pass
 
-    @abstractmethod
     def stop_plugin(self):
         pass
 

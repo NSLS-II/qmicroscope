@@ -112,15 +112,6 @@ class CrossHairPlugin(BaseImagePlugin):
         self._color = QColorDialog.getColor()
         self._paint_crosshair(self.parent.scene)
 
-    def mouse_press_event(self, event: QMouseEvent):
-        pass
-
-    def mouse_move_event(self, event: QMouseEvent):
-        pass
-
-    def mouse_release_event(self, event: QMouseEvent):
-        pass
-
     def write_settings(self) -> Dict[str, Any]:
         settings = {}
         settings["color"] = self._color
