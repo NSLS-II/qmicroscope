@@ -19,7 +19,30 @@ if TYPE_CHECKING:
 
 
 class CrossHairPlugin(BaseImagePlugin):
+    """
+    A plugin for displaying crosshair on an image.
+
+    Inherits from `BaseImagePlugin` class.
+
+    Attributes:
+        name (str): The name of the plugin.
+        _color (QColor): The color of the crosshair.
+        _pos (QPoint): The position of the center of the crosshair.
+        _always_centered (bool): Flag indicating whether the crosshair should always be centered on the image.
+        _horizontal_length (int): The length of the horizontal line of the crosshair.
+        _vertical_length (int): The length of the vertical line of the crosshair.
+        _visible (bool): Flag indicating whether the crosshair is visible.
+        _hor_line (QGraphicsLineItem): The horizontal line of the crosshair.
+        _vert_line (QGraphicsLineItem): The vertical line of the crosshair.
+    """
+
     def __init__(self, parent: "Microscope") -> None:
+        """
+        Initialize the `CrossHairPlugin` object.
+
+        Args:
+            parent (Microscope): The parent `Microscope` object that this plugin is associated with.
+        """
         super().__init__(parent)
         self.name = "Crosshair"
         self._color = QColor.fromRgb(0, 255, 0)
@@ -32,6 +55,12 @@ class CrossHairPlugin(BaseImagePlugin):
         self._vert_line = None
 
     def read_settings(self, settings: Dict[str, Any]):
+        """
+        Read settings from a dictionary and set the attributes of the `CrossHairPlugin` object accordingly.
+
+        Args:
+            settings (Dict[str, Any]): A dictionary containing the settings of the `CrossHairPlugin` object.
+        """
         self._color = settings.get("color", self._color)
         self._pos = settings.get("pos", self._pos)
         self._horizontal_length = int(settings.get("hor_len", self._horizontal_length))
@@ -46,12 +75,27 @@ class CrossHairPlugin(BaseImagePlugin):
             )
 
     def start_plugin(self):
+        """
+        Start the plugin by painting the crosshair on the scene.
+        """
         self._paint_crosshair(self.parent.scene)
 
     def stop_plugin(self):
+        """
+        Stop the plugin by removing the crosshair from the scene.
+        """
         self._remove_crosshair(self.parent.scene)
 
     def update_image_data(self, image):
+        """
+        Update the image data and repaint the crosshair if it should always be centered.
+
+        Args:
+            image: The image data.
+
+        Returns:
+            The updated image data.
+        """
         if self._always_centered:
             pos = QPoint(
                 int(self.parent.view.width() / 2), int(self.parent.view.height() / 2)
@@ -62,6 +106,12 @@ class CrossHairPlugin(BaseImagePlugin):
         return image
 
     def _remove_crosshair(self, scene: QGraphicsScene):
+        """
+        Remove the crosshair from the scene.
+
+        Args:
+            scene (QGraphicsScene): The `QGraphicsScene` object that the crosshair is on.
+        """
         if self._hor_line:
             if self._hor_line.scene() == scene:
                 scene.removeItem(self._hor_line)
@@ -70,6 +120,12 @@ class CrossHairPlugin(BaseImagePlugin):
                 scene.removeItem(self._vert_line)
 
     def _paint_crosshair(self, scene: QGraphicsScene):
+        """
+        Paint the crosshair on the scene.
+
+        Args:
+            scene (QGraphicsScene): The `QGraphicsScene` object that the crosshair is on.
+        """
         self._remove_crosshair(scene)
         pen = QPen(self._color)
         if self._always_centered:
@@ -90,6 +146,12 @@ class CrossHairPlugin(BaseImagePlugin):
         self._toggle_visibility(self._visible)
 
     def context_menu_entry(self):
+        """
+        Create and return a list of actions that can be added to the context menu.
+
+        Returns:
+            A list of `QAction` objects.
+        """
         actions = []
         # change_color_action = QAction('Change Color', self.parent)
         # change_color_action.triggered.connect(self._change_color)
@@ -103,16 +165,31 @@ class CrossHairPlugin(BaseImagePlugin):
         return actions
 
     def _toggle_visibility(self, value):
+        """
+        Toggle the visibility of the crosshair.
+
+        Args:
+            value (bool): The visibility of the crosshair.
+        """
         # self._visible = not self._visible
         self._visible = value
         self._hor_line.setVisible(self._visible)
         self._vert_line.setVisible(self._visible)
 
     def _change_color(self):
+        """
+        Change the color of the crosshair.
+        """
         self._color = QColorDialog.getColor()
         self._paint_crosshair(self.parent.scene)
 
     def write_settings(self) -> Dict[str, Any]:
+        """
+        Write the settings of the `CrossHairPlugin` object to a dictionary.
+
+        Returns:
+            A dictionary containing the settings of the `CrossHairPlugin` object.
+        """
         settings = {}
         settings["color"] = self._color
         settings["pos"] = self._pos
@@ -124,6 +201,15 @@ class CrossHairPlugin(BaseImagePlugin):
         return settings
 
     def add_settings(self, parent=None) -> Optional[QGroupBox]:
+        """
+        Add the settings of the `CrossHairPlugin` object to the parent widget.
+
+        Args:
+            parent (QWidget): The parent widget to add the settings to.
+
+        Returns:
+            A `QGroupBox` object containing the settings of the `CrossHairPlugin` object.
+        """
         parent = parent if parent else self.parent
         groupBox = QGroupBox(self.name, parent)
         layout = QFormLayout()

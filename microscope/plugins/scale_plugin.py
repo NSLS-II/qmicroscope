@@ -21,7 +21,27 @@ if TYPE_CHECKING:
 
 
 class ScalePlugin(BaseImagePlugin):
+    """
+    A class representing a plugin to add a scale bar to a microscope image.
+
+    Attributes:
+        name (str): The name of the plugin.
+        _color (QColor): The color of the scale bar.
+        _pos (QPoint): The position of the scale bar.
+        _horizontal_length (int): The length of the horizontal part of the scale bar.
+        _vertical_length (int): The length of the vertical part of the scale bar.
+        _visible (bool): Whether the scale bar is currently visible.
+        _hor_line (QGraphicsLineItem): The horizontal part of the scale bar.
+        _vert_line (QGraphicsLineItem): The vertical part of the scale bar.
+        _hor_line_measure (str): The measurement of the horizontal part of the scale bar.
+        _vert_line_measure (str): The measurement of the vertical part of the scale bar.
+        _hor_line_measure_text (QGraphicsSimpleTextItem): The text displaying the measurement of the horizontal part of the scale bar.
+        _vert_line_measure_text (QGraphicsSimpleTextItem): The text displaying the measurement of the vertical part of the scale bar.
+        _font (QFont): The font used for the measurement text.
+    """
+
     def __init__(self, parent: "Microscope") -> None:
+        """Initializes the plugin with the given parent microscope object."""
         super().__init__(parent)
         self.name = "Scale"
         self._color = QColor.fromRgb(0, 255, 0)
@@ -43,6 +63,7 @@ class ScalePlugin(BaseImagePlugin):
         self._vert_line_measure_text.setFont(_font)
 
     def _remove_scale(self, scene: QGraphicsScene):
+        """Removes the scale bar from the given QGraphicsScene object."""
         for item in [
             self._hor_line,
             self._vert_line,
@@ -54,6 +75,7 @@ class ScalePlugin(BaseImagePlugin):
                     scene.removeItem(item)
 
     def _paint_scale(self, scene: QGraphicsScene):
+        """Paints the scale bar on the given QGraphicsScene object."""
         self._remove_scale(scene)
         if self._pos is None:
             self._pos = QPoint(
@@ -86,6 +108,7 @@ class ScalePlugin(BaseImagePlugin):
         self._toggle_visibility(self._visible)
 
     def _toggle_visibility(self, value):
+        """Toggles the visibility of the scale bar."""
         self._visible = value
 
         for item in [
@@ -97,10 +120,12 @@ class ScalePlugin(BaseImagePlugin):
             item.setVisible(self._visible)
 
     def _change_color(self):
+        """Changes the color of the scale bar."""
         self._color = QColorDialog.getColor()
         self._paint_crosshair(self.parent.scene)
 
     def context_menu_entry(self):
+        """Returns a list of QAction objects to be displayed in the context menu of the parent microscope object."""
         actions = []
         visible_action = QAction(
             "Visible", self.parent, checkable=True, checked=self._visible
@@ -110,6 +135,7 @@ class ScalePlugin(BaseImagePlugin):
         return actions
 
     def read_settings(self, settings: Dict[str, Any]):
+        """Reads the plugin settings from the given dictionary object."""
         self._color = settings.get("color", self._color)
         self._pos = settings.get("pos", self._pos)
         self._horizontal_length = int(settings.get("hor_len", self._horizontal_length))

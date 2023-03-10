@@ -9,6 +9,11 @@ if TYPE_CHECKING:
 
 class TogglePlugin(BasePlugin):
     def __init__(self, parent: "Microscope") -> None:
+        """Initializes a TogglePlugin instance.
+
+        Args:
+            parent: The microscope instance to which this plugin is attached.
+        """
         super().__init__(parent)
         self.parent = parent
         self.name = "Toggle Plugin"
@@ -19,7 +24,8 @@ class TogglePlugin(BasePlugin):
         self.checkBoxProxy.setZValue(1)
         self.checkBox.stateChanged.connect(self._toggle_cam)
 
-    def _toggle_cam(self, state):
+    def _toggle_cam(self, state: bool):
+        """Toggle the camera on or off"""
         self.parent.acquire(state)
 
     def context_menu_entry(self):

@@ -4,15 +4,32 @@ from qtpy.QtWidgets import QGroupBox, QAction
 
 
 class BasePlugin:
+    """
+    A base class for microscope plugins.
+
+    Args:
+        parent: Parent widget of the plugin.
+
+    Attributes:
+        name (str): Name of the plugin.
+        updates_image (bool): Whether the plugin updates the microscope image.
+        parent: Parent widget of the plugin.
+    """
+
     def __init__(self, parent) -> None:
+        """
+        Initializes the BasePlugin class.
+
+        Args:
+            parent: Parent widget of the plugin.
+        """
         self.name = "Generic Plugin"
         self.updates_image = False
         self.parent = parent
 
     def context_menu_entry(self) -> List[QAction]:
         """
-        Add actions into the (right-click) context menu. The microscope widget will call this function when the
-        user right clicks the widget
+        Returns a list of actions to be added to the context menu.
 
         Returns:
             List of QActions
@@ -42,8 +59,7 @@ class BasePlugin:
 
     def read_settings(self, settings: Dict[str, Any]):
         """
-        Receives a dictionary of settings from the microscope widget.
-        This data should be used to set up the plugin.
+        Reads settings from a dictionary and sets up the plugin.
         Note: It is up to the plugin author to convert dictionary values to its appropriate type
         In Linux systems everything is stored as a string (for e.g. boolean values are 'true' and 'false' strings)
 
@@ -54,8 +70,7 @@ class BasePlugin:
 
     def write_settings(self) -> Dict[str, Any]:
         """
-        Provide a dictionary of settings to the caller. Usually to save it to disk. The dictionary
-        returned here is what is passed as an argument when read_settings is called.
+        Returns a dictionary of settings to be saved to disk.
 
         Returns:
             Dictionary of settings

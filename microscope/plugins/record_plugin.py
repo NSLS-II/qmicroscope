@@ -25,7 +25,25 @@ if TYPE_CHECKING:
 
 
 class RecorderThread(QThread):
+    """
+    A QThread subclass for recording video frames to a file using OpenCV.
+
+    Attributes:
+        - video_recorder: cv2.VideoWriter - An instance of cv2.VideoWriter for writing frames to a file.
+        - record: bool - A flag indicating whether recording is currently in progress.
+        - width: int - The width of the video frames in pixels.
+        - height: int - The height of the video frames in pixels.
+        - fps: int - The frame rate of the video in frames per second.
+        - fourcc: str or int - The FourCC code or string identifying the video codec to use.
+        - path: str - The file path where the recorded video will be saved.
+        - timer: QTimer - A QTimer instance for scheduling the recording of frames.
+        - current_frame: numpy.ndarray - The most recently captured video frame.
+
+    """
     def __init__(self):
+        """
+        Initializes a new instance of the RecorderThread class.
+        """
         super().__init__()
         self.video_recorder = cv.VideoWriter()
         self.record = True
@@ -39,6 +57,16 @@ class RecorderThread(QThread):
         self.current_frame = None
 
     def start(self, path, fourcc, fps, width, height):
+        """
+        Starts the video recording process with the specified parameters.
+
+        Args:
+            - path: str - The file path where the recorded video will be saved.
+            - fourcc: str or int - The FourCC code or string identifying the video codec to use.
+            - fps: int - The frame rate of the video in frames per second.
+            - width: int - The width of the video frames in pixels.
+            - height: int - The height of the video frames in pixels.
+        """
         self.set_params(path, fourcc, fps, width, height)
         self._setup_recorder()
         super().start()
@@ -46,6 +74,16 @@ class RecorderThread(QThread):
     def set_params(
         self, path="output.mp4", fourcc="avc1", fps=5, width=100, height=100
     ):
+        """
+        Sets the parameters for the video recording process.
+
+        Args:
+            - path: str - The file path where the recorded video will be saved.
+            - fourcc: str or int - The FourCC code or string identifying the video codec to use.
+            - fps: int - The frame rate of the video in frames per second.
+            - width: int - The width of the video frames in pixels.
+            - height: int - The height of the video frames in pixels.
+        """
         self.width = width
         self.height = height
         if isinstance(fourcc, str):
@@ -56,21 +94,36 @@ class RecorderThread(QThread):
         self.path = path
 
     def _setup_recorder(self):
+        """
+        Sets up the video recorder instance.
+        """
         self.timer.start(int(1000/self.fps))
         self.video_recorder.open(
             str(self.path), self.fourcc, float(self.fps), (self.width, self.height)
         )
 
     def stop(self):
+        """
+        Stops the video recording process.
+        """
         self.timer.stop()
         self.video_recorder.release()
         self.record = False
 
     def run(self):
+        """
+        Runs the recording loop until recording is stopped.
+        """
         while self.record:
             continue
 
     def handle_frame(self, frame):
+        """
+        Receives a video frame and prepares it for writing to the output file.
+
+        Args:
+            frame (numpy.ndarray): The video frame to be recorded.
+        """
         if frame.shape[0] != self.height or frame.shape[1] != self.width:
             self.height = frame.shape[0]
             self.width = frame.shape[1]
@@ -80,11 +133,40 @@ class RecorderThread(QThread):
         self.current_frame = frame
 
     def write_frame(self):
+        """
+        Writes the current video frame to the output file.
+        """
         if self.video_recorder.isOpened() and self.current_frame is not None:
             self.video_recorder.write(self.current_frame)
 
 
 class RecordPlugin(QObject):
+    """
+    A plugin to record video from the microscope.
+
+    Args:
+        parent (Microscope): The parent Microscope instance.
+
+    Attributes:
+        image_ready (Signal): A signal that is emitted when a new frame is ready.
+        name (str): The name of the plugin.
+        fourcc (int): The fourcc codec used for video recording.
+        filename (Path): The path to the output directory.
+        current_filepath (Path): The path to the current output file.
+        file_extension (str): The extension of the output file.
+        recording (bool): True if recording is currently ongoing, False otherwise.
+        fps (int): The frames per second of the recorded video.
+        width (int): The width of the recorded video.
+        height (int): The height of the recorded video.
+        hours_per_file (int): The maximum number of hours that can be recorded in a single file.
+        number_of_files (int): The maximum number of files that can be stored in the output directory.
+        video_recorder_thread (RecorderThread): The thread used for recording video.
+        updates_image (bool): True if the image should be updated during recording, False otherwise.
+        raw_image (bool): True if the raw image should be recorded, False if a pixmap should be recorded.
+        timestamp (bool): True if the current time should be overlaid on the video, False otherwise.
+        timestamp_color (QColor): The color of the timestamp.
+        timestamp_font_size (int): The font size of the timestamp.
+    """
     image_ready = Signal(object)
 
     def __init__(self, parent: "Microscope") -> None:
@@ -111,7 +193,12 @@ class RecordPlugin(QObject):
         self.timestamp_font_size = 12
 
     def qimage_to_mat(self, incomingImage: QImage):
-        """Converts a QImage into an opencv MAT format"""
+        """
+        Converts a QImage into an opencv MAT format.
+
+        Args:
+            incomingImage: The QImage to convert.
+        """
 
         incomingImage = incomingImage.convertToFormat(QImage.Format.Format_RGB888)
         incomingImage = incomingImage.scaledToWidth(self.width)
@@ -136,6 +223,12 @@ class RecordPlugin(QObject):
         # return arr
 
     def update_image_data(self, image: QImage):
+        """
+        Updates the recorded image data.
+
+        Args:
+            image: The image to record.
+        """
         if self.recording and image:
             if (datetime.now() - self.start_time).seconds >= 3600 * self.hours_per_file:
                 # Stop recording after x hours
