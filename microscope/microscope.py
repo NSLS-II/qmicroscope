@@ -12,7 +12,7 @@ from qtpy.QtWidgets import (
 )
 from typing import List, Any, Dict, Optional
 from .widgets.downloader import VideoThread
-from .plugins.base_plugin import BasePlugin
+from .plugins.base_plugin import BasePlugin, SupportsBasePlugin
 from .plugin_settings import PluginSettingsDialog
 
 
@@ -63,7 +63,12 @@ class Microscope(QWidget):
 
         self.plugins: List[BasePlugin] = []
         for plugin_cls in self.plugin_classes:
-            self.plugins.append(plugin_cls(self))
+            if isinstance(plugin_cls, SupportsBasePlugin):
+                self.plugins.append(plugin_cls(self))
+            else:
+                print(
+                    f"{plugin_cls.__name__} does not implement BasePlugin, ignoring Plugin"
+                )
 
         for plugin in self.plugins:
             self.mouse_press_signal.connect(plugin.mouse_press_event)

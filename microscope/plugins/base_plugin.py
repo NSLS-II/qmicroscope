@@ -1,6 +1,43 @@
 from typing import Dict, Any, Optional, List
 from qtpy.QtGui import QMouseEvent, QImage
 from qtpy.QtWidgets import QGroupBox, QAction
+from typing import Protocol, runtime_checkable
+
+
+@runtime_checkable
+class SupportsBasePlugin(Protocol):
+    def context_menu_entry(self) -> List[QAction]:
+        ...
+
+    def update_image_data(self, image: QImage) -> QImage:
+        ...
+
+    def mouse_press_event(self, event: QMouseEvent):
+        ...
+
+    def mouse_move_event(self, event: QMouseEvent):
+        ...
+
+    def mouse_release_event(self, event: QMouseEvent):
+        ...
+
+    def read_settings(self, settings: Dict[str, Any]):
+        ...
+
+    def write_settings(self) -> Dict[str, Any]:
+        ...
+
+    def start_plugin(self):
+        ...
+
+    def stop_plugin(self):
+        ...
+
+    def add_settings(self, parent=None) -> Optional[QGroupBox]:
+        ...
+
+    def save_settings(self, settings_groupbox) -> None:
+        ...
 
 
 class BasePlugin:
