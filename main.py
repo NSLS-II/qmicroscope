@@ -30,7 +30,7 @@ class Form(QMainWindow):
         super(Form, self).__init__(parent)
         # Create widgets
         self.setWindowTitle("NSLS-II Microscope Widget")
-        self.container = Container(self, plugins=[RecordPlugin, Test])
+        self.container = Container(self, plugins=[RecordPlugin])
         self.container.count = 3
         self.container.size = [2, 2]
         self.microscope = self.container.microscope(0)
