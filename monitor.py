@@ -27,6 +27,8 @@ from microscope.plugins import (
     TogglePlugin,
     CrossHairPlugin,
     RecordPlugin,
+    SquareGridPlugin,
+    VectorPlugin,
 )
 
 
@@ -40,7 +42,15 @@ class Form(QMainWindow):
         self.container.size = [2, 2]
         self.microscope = self.container.microscope(0)
         # self.microscope = Microscope(self)
-        plugins = [ZoomPlugin, GridPlugin, CrossHairPlugin, PresetPlugin, ScalePlugin]
+        plugins = [
+            ZoomPlugin,
+            GridPlugin,
+            CrossHairPlugin,
+            PresetPlugin,
+            ScalePlugin,
+            VectorPlugin,
+            SquareGridPlugin,
+        ]
         self.main_microscope = Microscope(self, viewport=False, plugins=plugins)
         self.main_microscope.scale = [0, 500]
         self.main_microscope.fps = 30
