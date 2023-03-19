@@ -11,7 +11,7 @@ from qtpy.QtWidgets import (
     QGraphicsSceneMouseEvent,
 )
 from qtpy.QtCore import QPoint, Qt, QRect, QRectF, Signal, QObject, QLineF
-from qtpy.QtGui import QColor, QPen
+from qtpy.QtGui import QColor, QPen, QCursor, QGuiApplication
 from microscope.widgets.rubberband import ResizableRubberBand
 from microscope.widgets.color_button import ColorButton
 from microscope.plugins.base_plugin import BasePlugin
@@ -31,11 +31,30 @@ class VectorNode(QGraphicsEllipseItem):
         super().__init__(*args, **kwargs)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
+        self.setAcceptHoverEvents(True)
 
     def itemChange(self, change: "QGraphicsItem.GraphicsItemChange", value: Any) -> Any:
         if change == QGraphicsItem.ItemPositionChange:
             self.vector_node_signal.moved.emit("moved")
         return super().itemChange(change, value)
+
+    def hoverEnterEvent(self, event):
+        cursor = QCursor(Qt.OpenHandCursor)
+        self.setCursor(cursor)
+        super().hoverEnterEvent(event)
+
+    def hoverLeaveEvent(self, event):
+        self.setCursor(QCursor(Qt.ArrowCursor))
+        super().hoverLeaveEvent(event)
+
+    def mousePressEvent(self, event: "QGraphicsSceneMouseEvent") -> None:
+        cursor = QCursor(Qt.ClosedHandCursor)
+        self.setCursor(cursor)
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event: "QGraphicsSceneMouseEvent") -> None:
+        self.setCursor(QCursor(Qt.ArrowCursor))
+        super().mouseReleaseEvent(event)
 
 
 class VectorPlugin(BasePlugin):
@@ -74,16 +93,14 @@ class VectorPlugin(BasePlugin):
 
     def mouse_press_event(self, event: QMouseEvent):
         if self._add_start:
-            self.start_node = self._place_node(
-                self.start_node, event.pos(), QColor("blue")
-            )
+            self._place_node("start_node", event.pos(), QColor("blue"))
             self._add_start = False
         elif self._add_end:
-            self.end_node = self._place_node(self.end_node, event.pos(), QColor("red"))
+            self._place_node("end_node", event.pos(), QColor("red"))
             self._add_end = False
         self._update_vector()
 
-    def _place_node(self, node, pos: QPoint, color):
+    def _place_node(self, node_name, pos: QPoint, color):
         pos.setX(pos.x() - self.node_radius)
         pos.setY(pos.y() - self.node_radius)
         rect = QRectF(0, 0, 2 * self.node_radius, 2 * self.node_radius)
@@ -95,7 +112,7 @@ class VectorPlugin(BasePlugin):
         node.setPos(pos)
         node.setZValue(2)
         self.parent.view.setCursor(Qt.ArrowCursor)
-        return node
+        setattr(self, node_name, node)
 
     def _update_vector(self):
         if self.end_node and self.start_node:
