@@ -7,8 +7,36 @@ from cv2 import VideoCapture
 import urllib.request
 from io import BytesIO
 from PIL import Image, ImageQt, ImageFile
+import urllib.request
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtCore import Qt, QBuffer
+
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+
+class VideoReader:
+    def __init__(self, url):
+        self._url = url
+
+    def read(self):
+        """
+        Reads an MJPEG stream from the given URL and returns a QImage.
+        """
+        stream = urllib.request.urlopen(self._url)
+        collected_bytes = b""
+        while True:
+            chunk = stream.read(1024)
+            if not chunk:
+                break
+            collected_bytes += chunk
+            a = collected_bytes.find(b"\xff\xd8")
+            b = collected_bytes.find(b"\xff\xd9")
+            if a != -1 and b != -1:
+                jpg = collected_bytes[a : b + 2]
+                bytes = collected_bytes[b + 2 :]
+                img = QImage.fromData(jpg)
+                return img
 
 
 class Downloader(QObject):
