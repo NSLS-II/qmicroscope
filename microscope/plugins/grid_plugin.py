@@ -8,6 +8,7 @@ from qtpy.QtWidgets import (
     QHBoxLayout,
     QSpinBox,
     QLabel,
+    QGraphicsItemGroup,
 )
 from qtpy.QtCore import QPoint, Qt, QRect, QRectF
 from qtpy.QtGui import QColor, QPen
@@ -30,7 +31,7 @@ class GridPlugin(BasePlugin):
 
     """
 
-    def __init__(self, parent: "Optional[Microscope]" = None):
+    def __init__(self, parent: "Microscope"):
         """Initializes the GridPlugin instance.
 
         Args:
@@ -87,9 +88,10 @@ class GridPlugin(BasePlugin):
     def start_plugin(self):
         """Starts the plugin."""
         if self.plugin_state["grid_defined"]:
-            self.paintBoxes(self.parent.scene)
-            self._grid.setVisible(not self.plugin_state["grid_hidden"])
-            self.create_rubberband()
+            self._grid = self.paintBoxes(self.parent.scene)
+            if self._grid:
+                self._grid.setVisible(not self.plugin_state["grid_hidden"])
+            self.rubberBand = self.create_rubberband()
             self.rubberBand.setGeometry(QRect(self.start, self.end).normalized())
             self.rubberBand.setVisible(not self.plugin_state["selector_hidden"])
 
@@ -124,31 +126,24 @@ class GridPlugin(BasePlugin):
         """
         actions = []
         if self.plugin_state["grid_defined"]:
-            # if not self.rubberBand:
-            #    self.create_rubberband()
-            #    self.rubberBand.setVisible(self.plugin_state['selector_hidden'])
-            self.hide_show_action = QAction(
-                "Selector Visible",
-                self.parent,
-                checkable=True,
-                checked=self.rubberBand.isVisible(),
-            )
+            if self.rubberBand:
+                self.hide_show_action = QAction(
+                    "Selector Visible",
+                    self.parent,
+                    checkable=True,
+                    checked=self.rubberBand.isVisible(),
+                )
             self.hide_show_action.triggered.connect(self._toggle_selector)
             actions.append(self.hide_show_action)
-            # if self._grid:
-            self.hide_show_grid_action = QAction(
-                "Grid Visible",
-                self.parent,
-                checkable=True,
-                checked=self._grid.isVisible(),
-            )
-            # self.select_grid_color_action = QAction('Change Grid color', self.parent)
+            if self._grid:
+                self.hide_show_grid_action = QAction(
+                    "Grid Visible",
+                    self.parent,
+                    checkable=True,
+                    checked=self._grid.isVisible(),
+                )
             self.hide_show_grid_action.triggered.connect(self._toggle_grid)
-            # self.select_grid_color_action.triggered.connect(self._select_grid_color)
-            actions.extend(
-                [self.hide_show_grid_action]
-            )  # , self.select_grid_color_action])
-
+            actions.extend([self.hide_show_grid_action])
         self.start_drawing_grid_action = QAction("Draw grid", self.parent)
         self.start_drawing_grid_action.triggered.connect(self._start_grid)
         actions.append(self.start_drawing_grid_action)
@@ -158,13 +153,13 @@ class GridPlugin(BasePlugin):
     def _select_grid_color(self) -> None:
         """Shows a color picker dialog and sets the grid color to the selected color."""
         self._grid_color = QColorDialog.getColor()
-        if self._grid:
-            self.paintBoxes(self.parent.scene)
+        self._grid = self.paintBoxes(self.parent.scene)
 
     def _toggle_selector(self):
         """Toggles the visibility of the rectangle used to define the grid."""
-        self.rubberBand.toggle_selector()
-        self.plugin_state["selector_hidden"] = not self.rubberBand.isVisible()
+        if self.rubberBand:
+            self.rubberBand.toggle_selector()
+            self.plugin_state["selector_hidden"] = not self.rubberBand.isVisible()
 
     def _toggle_grid(self) -> None:
         """Toggles the visibility of the grid."""
@@ -189,7 +184,7 @@ class GridPlugin(BasePlugin):
         """
         self.start = start
         self.end = end
-        self.paintBoxes(self.parent.scene)
+        self._grid = self.paintBoxes(self.parent.scene)
 
     def mouse_move_event(self, event: QMouseEvent):
         """Handle mouse move events. If the grid is being defined and a rubberband object exists and the
@@ -227,11 +222,11 @@ class GridPlugin(BasePlugin):
                 self.start = event.pos()
 
             if not self.rubberBand and not self.parent.viewport:
-                self.create_rubberband()
+                self.rubberBand = self.create_rubberband()
 
     def mouse_release_event(self, event: QMouseEvent):
         if self.start_grid:
-            self.paintBoxes(self.parent.scene)
+            self._grid = self.paintBoxes(self.parent.scene)
             self.plugin_state["grid_defined"] = True
             self.start_grid = False
 
@@ -251,19 +246,20 @@ class GridPlugin(BasePlugin):
                 self._grid = None
                 self._grid_items = []
 
-    def create_rubberband(self):
+    def create_rubberband(self) -> ResizableRubberBand:
         """
         Create a new rubberband object and display it on the parent widget.
 
         Returns:
             None.
         """
-        self.rubberBand = ResizableRubberBand(self.parent)
-        self.rubberBand.box_modified.connect(self.update_grid)
-        self.rubberBand.setGeometry(QRect(self.start, self.end))
-        self.rubberBand.show()
+        rubberBand = ResizableRubberBand(self.parent)
+        rubberBand.box_modified.connect(self.update_grid)
+        rubberBand.setGeometry(QRect(self.start, self.end))
+        rubberBand.show()
+        return rubberBand
 
-    def paintBoxes(self, scene: QGraphicsScene) -> None:
+    def paintBoxes(self, scene: QGraphicsScene) -> "QGraphicsItemGroup":
         """
         Paint the boxes of the grid onto the specified QGraphicsScene. Removes the old grid if it
         exists, creates a new grid using the current rubberband object's position and settings,
@@ -273,7 +269,7 @@ class GridPlugin(BasePlugin):
             scene (QGraphicsScene): The QGraphicsScene onto which to paint the grid.
 
         Returns:
-            None.
+            QGraphicsItemGroup
         """
         self.remove_grid(scene)
         rect = QRectF(self.start, self.end)
@@ -298,7 +294,7 @@ class GridPlugin(BasePlugin):
             l = scene.addLine(x1, int(y1 + i * inc_y), x2, int(y1 + i * inc_y), pen=pen)
             self._grid_items.append(l)
 
-        self._grid = scene.createItemGroup(self._grid_items)
+        return scene.createItemGroup(self._grid_items)
 
     def add_settings(self, parent=None) -> Optional[QGroupBox]:
         """
@@ -350,4 +346,4 @@ class GridPlugin(BasePlugin):
         self._x_divs = self.x_divs_widget.value()
         self._y_divs = self.y_divs_widget.value()
 
-        self.paintBoxes(self.parent.scene)
+        self._grid = self.paintBoxes(self.parent.scene)
