@@ -50,6 +50,7 @@ class Form(QMainWindow):
             ScalePlugin,
             VectorPlugin,
             SquareGridPlugin,
+            RecordPlugin,
         ]
         self.main_microscope = Microscope(self, viewport=False, plugins=plugins)
         self.main_microscope.scale = [0, 500]
