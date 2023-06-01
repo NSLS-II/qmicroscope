@@ -19,6 +19,7 @@ import cv2 as cv
 import numpy as np
 from pathlib import Path
 from datetime import datetime
+from epics import PV
 
 if TYPE_CHECKING:
     from microscope.microscope import Microscope
@@ -191,6 +192,9 @@ class RecordPlugin(QObject):
         self.timestamp = False
         self.timestamp_color = QColor.fromRgb(0, 255, 0)
         self.timestamp_font_size = 12
+        self.use_epics_pv: bool = False
+        self.epics_pv_name: str = ""
+        self.epics_pv: "PV|None" = None
 
     def qimage_to_mat(self, incomingImage: QImage):
         """
@@ -306,6 +310,13 @@ class RecordPlugin(QObject):
             for f in files_to_delete:
                 f.unlink(missing_ok=True)
 
+    def _start_epics_record(self, **kwargs):
+        if kwargs["pvname"] == self.epics_pv_name:
+            if kwargs["value"] == 1 and not self.recording:
+                self.record_action.trigger()
+            elif kwargs["value"] == 0 and self.recording:
+                self.record_action.trigger()
+
     def read_settings(self, settings: Dict[str, Any]):
         self.fps = int(settings.get("fps", 5))
         self.filename = Path(
@@ -320,6 +331,15 @@ class RecordPlugin(QObject):
         )
         self.timestamp_font_size = int(settings.get("timestamp_font_size", 12))
         self.width = int(settings.get("image_width", 480))
+        self.use_epics_pv = bool(settings.get("use_epics", False))
+        self.epics_pv_name = str(settings.get("epics_pv", ""))
+        self.setup_epics()
+
+    def setup_epics(self):
+        if self.epics_pv_name:
+            self.epics_pv = PV(
+                pvname=self.epics_pv_name, callback=self._start_epics_record
+            )
 
     def write_settings(self) -> Dict[str, Any]:
         settings = {}
@@ -333,6 +353,8 @@ class RecordPlugin(QObject):
         settings["timestamp_color"] = self.timestamp_color
         settings["timestamp_font_size"] = self.timestamp_font_size
         settings["image_width"] = self.width
+        settings["use_epics"] = self.use_epics_pv
+        settings["epics_pv"] = self.epics_pv_name
         return settings
 
     def start_plugin(self):
@@ -415,6 +437,18 @@ class RecordPlugin(QObject):
         layout.addRow("Timestamp color", hbox3)
         ## End row
 
+        ## Start row
+        self.use_epics_pv_checkbox = QCheckBox()
+        self.use_epics_pv_checkbox.setChecked(self.use_epics_pv)
+        epics_pv_name = QLabel("EPICS PV")
+        self.epics_pv_textbox = QLineEdit(self.epics_pv_name, parent)
+        hbox_epics = QHBoxLayout()
+        hbox_epics.addWidget(self.use_epics_pv_checkbox)
+        hbox_epics.addWidget(epics_pv_name)
+        hbox_epics.addWidget(self.epics_pv_textbox)
+        layout.addRow("Use EPICS PV", hbox_epics)
+        ## End row
+
         groupBox.setLayout(layout)
         return groupBox
 
@@ -438,3 +472,6 @@ class RecordPlugin(QObject):
         self.timestamp = self.timestamp_widget.isChecked()
         self.timestamp_color = self.timestamp_color_widget.color()
         self.timestamp_font_size = self.timestamp_font_size_widget.value()
+        self.use_epics_pv = self.use_epics_pv_checkbox.isChecked()
+        self.epics_pv_name = self.epics_pv_textbox.text()
+        self.setup_epics()
