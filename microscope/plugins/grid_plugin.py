@@ -14,6 +14,7 @@ from qtpy.QtGui import QColor, QPen
 from microscope.widgets.rubberband import ResizableRubberBand
 from microscope.widgets.color_button import ColorButton
 from microscope.plugins.base_plugin import BasePlugin
+from microscope.utils import convert_str_bool
 from qtpy.QtGui import QMouseEvent
 from collections import defaultdict
 
@@ -50,19 +51,6 @@ class GridPlugin(BasePlugin):
         self._x_divs = 5
         self._y_divs = 5
 
-    def convert_str_bool(self, val):
-        """Converts a string representation of a boolean to a boolean value.
-
-        Args:
-            val (str): The string representation of the boolean.
-
-        Returns:
-            bool: The boolean value.
-        """
-        if isinstance(val, str):
-            return True if val.lower() == "true" else False
-        return val
-
     def read_settings(self, settings: Dict[str, Any]):
         """Reads the plugin's settings from a dictionary.
 
@@ -72,13 +60,13 @@ class GridPlugin(BasePlugin):
         self._grid_color = settings.get("color", QColor.fromRgb(0, 255, 0))
         self.start = settings.get("start", QPoint(0, 0))
         self.end = settings.get("end", QPoint(1, 1))
-        self.plugin_state["grid_hidden"] = self.convert_str_bool(
+        self.plugin_state["grid_hidden"] = convert_str_bool(
             settings.get("grid_hidden", False)
         )
-        self.plugin_state["selector_hidden"] = self.convert_str_bool(
+        self.plugin_state["selector_hidden"] = convert_str_bool(
             settings.get("selector_hidden", False)
         )
-        self.plugin_state["grid_defined"] = self.convert_str_bool(
+        self.plugin_state["grid_defined"] = convert_str_bool(
             settings.get("grid_defined", False)
         )
         self._x_divs = int(settings.get("x_divs", 5))

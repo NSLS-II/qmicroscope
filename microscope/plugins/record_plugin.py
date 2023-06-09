@@ -13,6 +13,7 @@ from qtpy.QtWidgets import (
 from qtpy.QtGui import QImage, QPainter, QPen, QFont, QColor
 from microscope.plugins.base_plugin import BaseImagePlugin
 from microscope.widgets.color_button import ColorButton
+from microscope.utils import convert_str_bool
 from qtpy.QtGui import QMouseEvent
 from qtpy.QtCore import QThread, Signal, QObject, Qt, QTimer
 import cv2 as cv
@@ -329,14 +330,14 @@ class RecordPlugin(QObject):
         )
         self.hours_per_file = int(settings.get("hours_per_file", 1))
         self.number_of_files = int(settings.get("number_of_files", 1))
-        self.raw_image = True if settings.get("raw_image", "true") == "true" else False
-        self.timestamp = True if settings.get("timestamp", "true") == "true" else False
+        self.raw_image = convert_str_bool(settings.get("raw_image", True))
+        self.timestamp = convert_str_bool(settings.get("timestamp", False))
         self.timestamp_color = settings.get(
             "timestamp_color", QColor.fromRgb(0, 255, 0)
         )
         self.timestamp_font_size = int(settings.get("timestamp_font_size", 12))
         self.width = int(settings.get("image_width", 480))
-        self.use_epics_pv = bool(settings.get("use_epics", False))
+        self.use_epics_pv = convert_str_bool(settings.get("use_epics", True))
         self.epics_pv_name = str(settings.get("epics_pv", ""))
         self.setup_epics()
 
