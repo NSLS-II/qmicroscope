@@ -282,6 +282,9 @@ class RecordPlugin(QObject):
             self.current_filepath = Path(self.filename.parent) / Path(
                 f'{self.filename.stem}_{self.start_time.strftime("%b-%d-%Y_%H%M%S")}.{self.file_extension}'
             )
+            if self.current_filepath.exists():
+                print("Already recording")
+                return
             print(f"Writing to {self.current_filepath}")
             # self.out = cv.VideoWriter(str(self.current_filepath), self.fourcc, 5.0, (self.width,self.height))
             self.video_recorder_thread.start(
