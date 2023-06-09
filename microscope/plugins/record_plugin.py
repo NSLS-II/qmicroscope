@@ -198,6 +198,10 @@ class RecordPlugin(QObject):
         self.use_epics_pv: bool = False
         self.epics_pv_name: str = ""
         self.epics_pv: "PV|None" = None
+        self.start_record_action = QAction("Start Record", self.parent())
+        self.start_record_action.triggered.connect(lambda: self._set_record(True))
+        self.stop_record_action = QAction("Stop Record", self.parent())
+        self.stop_record_action.triggered.connect(lambda: self._set_record(False))
 
     def qimage_to_mat(self, qimage: QImage):
         qimage = qimage.convertToFormat(QImage.Format.Format_ARGB32)
@@ -271,9 +275,8 @@ class RecordPlugin(QObject):
         actions.append(self.record_action)
         return actions
 
-    def _record(self):
-        self.recording = not self.recording
-        if self.recording:
+    def _set_record(self, start):
+        if start:
             print("Starting record in _record")
             self.start_time = datetime.now()
             self.current_filepath = Path(self.filename.parent) / Path(
@@ -302,6 +305,10 @@ class RecordPlugin(QObject):
             )
             self._update_files()
 
+    def _record(self):
+        self.recording = not self.recording
+        self._set_record(self.recording)
+
     def _update_files(self):
         """Function to check if number of files in the destination folder is correct
         Otherwise delete oldest file(s)
@@ -322,10 +329,10 @@ class RecordPlugin(QObject):
         if kwargs["pvname"] == self.epics_pv_name:
             if kwargs["value"] == 1 and not self.recording:
                 print(f"{self.epics_pv_name} : {kwargs['value']}. START record action")
-                self.record_action.trigger()
+                self.start_record_action.trigger()
             elif kwargs["value"] == 0 and self.recording:
                 print(f"{self.epics_pv_name} : {kwargs['value']}. STOP record action")
-                self.record_action.trigger()
+                self.stop_record_action.trigger()
 
     def read_settings(self, settings: Dict[str, Any]):
         self.fps = int(settings.get("fps", 5))
