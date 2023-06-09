@@ -97,7 +97,7 @@ class GridPlugin(BasePlugin):
         """Stops the plugin."""
         self.remove_grid(self.parent.scene)
         if self.rubberBand:
-            self.rubberBand.destroy()
+            self.rubberBand.deleteLater()
 
     def write_settings(self) -> Dict[str, Any]:
         """Writes the plugin's settings to a dictionary.

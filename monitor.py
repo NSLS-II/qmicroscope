@@ -27,8 +27,6 @@ from microscope.plugins import (
     TogglePlugin,
     CrossHairPlugin,
     RecordPlugin,
-    SquareGridPlugin,
-    VectorPlugin,
 )
 
 
@@ -48,8 +46,6 @@ class Form(QMainWindow):
             CrossHairPlugin,
             PresetPlugin,
             ScalePlugin,
-            VectorPlugin,
-            SquareGridPlugin,
             RecordPlugin,
         ]
         self.main_microscope = Microscope(self, viewport=False, plugins=plugins)
