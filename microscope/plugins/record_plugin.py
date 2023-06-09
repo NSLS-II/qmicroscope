@@ -274,6 +274,7 @@ class RecordPlugin(QObject):
     def _record(self):
         self.recording = not self.recording
         if self.recording:
+            print("Starting record in _record")
             self.start_time = datetime.now()
             self.current_filepath = Path(self.filename.parent) / Path(
                 f'{self.filename.stem}_{self.start_time.strftime("%b-%d-%Y_%H%M%S")}.{self.file_extension}'
@@ -284,6 +285,7 @@ class RecordPlugin(QObject):
                 self.current_filepath, self.fourcc, self.fps, self.width, self.height
             )
         else:
+            print("Stopping record in _record")
             if not self.current_filepath:
                 return
             self.video_recorder_thread.stop()
@@ -319,8 +321,10 @@ class RecordPlugin(QObject):
     def _start_epics_record(self, **kwargs):
         if kwargs["pvname"] == self.epics_pv_name:
             if kwargs["value"] == 1 and not self.recording:
+                print(f"{self.epics_pv_name} : {kwargs['value']}. START record action")
                 self.record_action.trigger()
             elif kwargs["value"] == 0 and self.recording:
+                print(f"{self.epics_pv_name} : {kwargs['value']}. STOP record action")
                 self.record_action.trigger()
 
     def read_settings(self, settings: Dict[str, Any]):
