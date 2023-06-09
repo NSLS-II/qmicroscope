@@ -8,7 +8,7 @@ from qtpy.QtWidgets import (
     QLabel,
     QSpinBox,
     QLineEdit,
-    QCheckBox
+    QCheckBox,
 )
 from qtpy.QtGui import QImage, QPainter, QPen, QFont, QColor
 from microscope.plugins.base_plugin import BaseImagePlugin
@@ -41,6 +41,7 @@ class RecorderThread(QThread):
         - current_frame: numpy.ndarray - The most recently captured video frame.
 
     """
+
     def __init__(self):
         """
         Initializes a new instance of the RecorderThread class.
@@ -98,7 +99,7 @@ class RecorderThread(QThread):
         """
         Sets up the video recorder instance.
         """
-        self.timer.start(int(1000/self.fps))
+        self.timer.start(int(1000 / self.fps))
         self.video_recorder.open(
             str(self.path), self.fourcc, float(self.fps), (self.width, self.height)
         )
@@ -168,13 +169,14 @@ class RecordPlugin(QObject):
         timestamp_color (QColor): The color of the timestamp.
         timestamp_font_size (int): The font size of the timestamp.
     """
+
     image_ready = Signal(object)
 
     def __init__(self, parent: "Microscope") -> None:
         super().__init__(parent)
         # self.parent = parent
         self.name = "Record"
-        self.fourcc = cv.VideoWriter_fourcc(*"H264")  # avc1 - mp4
+        self.fourcc = cv.VideoWriter_fourcc(*"mp4v")  # H264 avc1 - mp4
         # self.filename = Path('/nsls2/data/fmx/legacy/2023-1/pass-312064/video_test/output')
         self.filename = Path.home() / Path("output")
         self.current_filepath = None
@@ -196,35 +198,36 @@ class RecordPlugin(QObject):
         self.epics_pv_name: str = ""
         self.epics_pv: "PV|None" = None
 
-    def qimage_to_mat(self, incomingImage: QImage):
-        """
-        Converts a QImage into an opencv MAT format.
-
-        Args:
-            incomingImage: The QImage to convert.
-        """
-
-        incomingImage = incomingImage.convertToFormat(QImage.Format.Format_RGB888)
-        incomingImage = incomingImage.scaledToWidth(self.width)
-        self.height = incomingImage.height()
+    def qimage_to_mat(self, qimage: QImage):
+        qimage = qimage.convertToFormat(QImage.Format.Format_ARGB32)
+        qimage = qimage.scaledToWidth(self.width)
+        self.height = qimage.height()
 
         if self.timestamp:
-            p = QPainter(incomingImage)
+            p = QPainter(qimage)
             p.setPen(QPen(self.timestamp_color))
             p.setFont(QFont("Times", self.timestamp_font_size, QFont.Bold))
             p.drawText(
-                incomingImage.rect(),
+                qimage.rect(),
                 Qt.AlignHCenter,
                 f'{datetime.now().strftime("%b-%d-%Y %H:%M:%S")}',
             )
             p.end()
-            incomingImage = incomingImage.rgbSwapped()
 
-        ptr = incomingImage.bits()
-        ptr.setsize(self.height * self.width * 3)
-        arr = np.frombuffer(ptr, np.uint8).reshape((self.height, self.width, 3))
+        qimage = qimage.rgbSwapped()
+        width = qimage.width()
+        height = qimage.height()
+
+        # Get the byte array from the QImage
+        byte_array = qimage.bits().asarray(qimage.byteCount())
+        # Create a 1D numpy array from the byte array
+        image_array = np.frombuffer(byte_array, dtype=np.uint8).reshape(
+            (height, width, 4)
+        )
+
+        # Convert QImage format to OpenCV format (BGR)
+        arr = cv.cvtColor(image_array, cv.COLOR_RGBA2BGR)
         self.image_ready.emit(arr)
-        # return arr
 
     def update_image_data(self, image: QImage):
         """
@@ -304,7 +307,9 @@ class RecordPlugin(QObject):
             self.filename.parent.glob(f"{self.filename.stem}*.{self.file_extension}")
         )
         if len(files_found) > self.number_of_files:
-            files_found = sorted(files_found, key=lambda f: f.stat().st_mtime, reverse=True)
+            files_found = sorted(
+                files_found, key=lambda f: f.stat().st_mtime, reverse=True
+            )
             files_to_delete = files_found[self.number_of_files :]
             print(f"Files to delete: {files_to_delete}")
             for f in files_to_delete:
@@ -361,7 +366,7 @@ class RecordPlugin(QObject):
         pass
 
     def stop_plugin(self):
-        pass
+        self.video_recorder_thread.stop()
 
     def add_settings(self, parent=None) -> Optional[QGroupBox]:
         parent = parent if parent else self.parent()

@@ -99,6 +99,11 @@ class Microscope(QWidget):
             self.videoThread.stop()
             self.videoThread.wait(500)
 
+    def stop_plugins(self):
+        "For cleaning up threads and other processes"
+        for plugin in self.plugins:
+            plugin.stop_plugin()
+
     def eventFilter(self, obj, event):
         if obj is self.view.viewport():
             if event.type() == QEvent.MouseButtonPress:
@@ -138,7 +143,6 @@ class Microscope(QWidget):
         self.view.translate(delta.x(), delta.y())
 
     def mouse_press_event(self, a0: QMouseEvent):
-
         if self.viewport:
             self.clicked_url.emit(self.settings_group)
 
