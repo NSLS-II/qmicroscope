@@ -244,9 +244,9 @@ class RecordPlugin(QObject):
         if self.recording and image:
             if (datetime.now() - self.start_time).seconds >= 3600 * self.hours_per_file:
                 # Stop recording after x hours
-                self._record()
+                self._set_record(False)
                 # Restart recording
-                self._record()
+                self._set_record(True)
 
             if self.raw_image:
                 recorded_image = image.copy()
@@ -270,14 +270,16 @@ class RecordPlugin(QObject):
     def context_menu_entry(self):
         actions = []
         label = "Stop recording" if self.recording else "Start recording"
-        self.record_action = QAction(label, self.parent())
-        self.record_action.triggered.connect(self._record)
-        actions.append(self.record_action)
+        if self.recording:
+            actions.append(self.stop_record_action)
+        else:
+            actions.append(self.start_record_action)
         return actions
 
     def _set_record(self, start):
-        if start:
-            print("Starting record in _record")
+        if start and not self.recording:
+            print("Starting record in _set_record")
+            self.recording = True
             self.start_time = datetime.now()
             self.current_filepath = Path(self.filename.parent) / Path(
                 f'{self.filename.stem}_{self.start_time.strftime("%b-%d-%Y_%H%M%S")}.{self.file_extension}'
@@ -290,8 +292,9 @@ class RecordPlugin(QObject):
             self.video_recorder_thread.start(
                 self.current_filepath, self.fourcc, self.fps, self.width, self.height
             )
-        else:
-            print("Stopping record in _record")
+        elif not start and self.recording:
+            print("Stopping record in _set_record")
+            self.recording = False
             if not self.current_filepath:
                 return
             self.video_recorder_thread.stop()
@@ -307,10 +310,6 @@ class RecordPlugin(QObject):
                 f"Finished writing to {self.current_filepath.parent/self.new_filepath}"
             )
             self._update_files()
-
-    def _record(self):
-        self.recording = not self.recording
-        self._set_record(self.recording)
 
     def _update_files(self):
         """Function to check if number of files in the destination folder is correct
