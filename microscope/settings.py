@@ -33,7 +33,7 @@ class Settings(QDialog):
         self.cameraRows.setMaximum(6)
         self.cameraRows.setValue(1)
         self.scale = QSpinBox()
-        self.scale.setRange(0, 5000)
+        self.scale.setRange(100, 5000)
         self.scale.setSingleStep(10)
         self.scale.setValue(100)
         self.fps = QSpinBox()
@@ -147,7 +147,7 @@ class Settings(QDialog):
         self.microscope.xDivs = self.xDivs.value()
         self.microscope.yDivs = self.yDivs.value()
         self.microscope.color = self.color.isChecked()
-        self.microscope.scale = [self.scale.value(), 0]
+        self.microscope.scale = [self.scale.value(), 100]
         self.microscope.update()
 
     def updateForm(self):
