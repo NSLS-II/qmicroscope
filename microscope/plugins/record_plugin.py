@@ -270,10 +270,11 @@ class RecordPlugin(QObject):
     def context_menu_entry(self):
         actions = []
         label = "Stop recording" if self.recording else "Start recording"
-        if self.recording:
-            actions.append(self.stop_record_action)
-        else:
-            actions.append(self.start_record_action)
+        if not self.use_epics_pv:
+            if self.recording:
+                actions.append(self.stop_record_action)
+            else:
+                actions.append(self.start_record_action)
         return actions
 
     def _set_record(self, start):
