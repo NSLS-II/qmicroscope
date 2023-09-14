@@ -16,10 +16,10 @@ from qtpy.QtWidgets import (
     QWidget,
     QSplitter,
 )
-from microscope.microscope import Microscope
-from microscope.container import Container
-from microscope.settings import Settings
-from microscope.plugins import (
+from qmicroscope.microscope import Microscope
+from qmicroscope.container import Container
+from qmicroscope.settings import Settings
+from qmicroscope.plugins import (
     ZoomPlugin,
     GridPlugin,
     PresetPlugin,
@@ -27,6 +27,7 @@ from microscope.plugins import (
     TogglePlugin,
     CrossHairPlugin,
     RecordPlugin,
+    SquareGridPlugin,
 )
 
 
@@ -47,6 +48,7 @@ class Form(QMainWindow):
             PresetPlugin,
             ScalePlugin,
             RecordPlugin,
+            SquareGridPlugin,
         ]
         self.main_microscope = Microscope(self, viewport=False, plugins=plugins)
         self.main_microscope.scale = [0, 500]

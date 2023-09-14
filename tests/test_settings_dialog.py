@@ -10,7 +10,7 @@ from qtpy.QtWidgets import (
     QWidgetItem,
 )
 from qtpy import QtCore
-from microscope.plugin_settings import PluginSettingsDialog, BasePlugin
+from qmicroscope.plugin_settings import PluginSettingsDialog, BasePlugin
 
 
 @pytest.fixture

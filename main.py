@@ -19,10 +19,10 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from microscope.microscope import Microscope
-from microscope.container import Container
-from microscope.settings import Settings
-from microscope.plugins.record_plugin import RecordPlugin
+from qmicroscope.microscope import Microscope
+from qmicroscope.container import Container
+from qmicroscope.settings import Settings
+from qmicroscope.plugins.record_plugin import RecordPlugin
 
 
 class Form(QMainWindow):

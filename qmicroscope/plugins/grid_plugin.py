@@ -11,15 +11,15 @@ from qtpy.QtWidgets import (
 )
 from qtpy.QtCore import QPoint, Qt, QRect, QRectF
 from qtpy.QtGui import QColor, QPen
-from microscope.widgets.rubberband import ResizableRubberBand
-from microscope.widgets.color_button import ColorButton
-from microscope.plugins.base_plugin import BasePlugin
-from microscope.utils import convert_str_bool
+from qmicroscope.widgets.rubberband import ResizableRubberBand
+from qmicroscope.widgets.color_button import ColorButton
+from qmicroscope.plugins.base_plugin import BasePlugin
+from qmicroscope.utils import convert_str_bool
 from qtpy.QtGui import QMouseEvent
 from collections import defaultdict
 
 if TYPE_CHECKING:
-    from microscope.microscope import Microscope
+    from qmicroscope.microscope import Microscope
 
 
 class GridPlugin(BasePlugin):

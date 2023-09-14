@@ -8,7 +8,7 @@ from qtpy.QtWidgets import (
     QGroupBox,
 )
 from typing import Dict, Optional
-from microscope.plugins.base_plugin import BasePlugin
+from qmicroscope.plugins.base_plugin import BasePlugin
 
 
 class PluginSettingsDialog(QDialog):

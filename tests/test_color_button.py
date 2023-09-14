@@ -2,7 +2,7 @@ import pytest
 from qtpy.QtGui import QColor, QMouseEvent
 from qtpy.QtWidgets import QApplication
 from qtpy.QtCore import Qt
-from microscope.widgets.color_button import ColorButton
+from qmicroscope.widgets.color_button import ColorButton
 
 
 @pytest.fixture

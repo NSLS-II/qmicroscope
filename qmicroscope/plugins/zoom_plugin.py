@@ -3,8 +3,8 @@ from qtpy.QtCore import QRect, Qt
 
 from typing import Any, Dict, Optional
 
-from microscope.widgets.rubberband import ResizableRubberBand
-from microscope.plugins.base_plugin import BaseImagePlugin
+from qmicroscope.widgets.rubberband import ResizableRubberBand
+from qmicroscope.plugins.base_plugin import BaseImagePlugin
 
 
 class ZoomPlugin(BaseImagePlugin):

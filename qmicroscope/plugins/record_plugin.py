@@ -11,9 +11,9 @@ from qtpy.QtWidgets import (
     QCheckBox,
 )
 from qtpy.QtGui import QImage, QPainter, QPen, QFont, QColor
-from microscope.plugins.base_plugin import BaseImagePlugin
-from microscope.widgets.color_button import ColorButton
-from microscope.utils import convert_str_bool
+from qmicroscope.plugins.base_plugin import BaseImagePlugin
+from qmicroscope.widgets.color_button import ColorButton
+from qmicroscope.utils import convert_str_bool
 from qtpy.QtGui import QMouseEvent
 from qtpy.QtCore import QThread, Signal, QObject, Qt, QTimer
 import cv2 as cv
@@ -23,7 +23,7 @@ from datetime import datetime
 from epics import PV
 
 if TYPE_CHECKING:
-    from microscope.microscope import Microscope
+    from qmicroscope.microscope import Microscope
 
 
 class RecorderThread(QThread):

@@ -12,14 +12,14 @@ from qtpy.QtWidgets import (
 )
 from qtpy.QtCore import QPoint, Qt, QRect, QRectF, Signal, QObject, QLineF
 from qtpy.QtGui import QColor, QPen, QCursor, QGuiApplication
-from microscope.widgets.rubberband import ResizableRubberBand
-from microscope.widgets.color_button import ColorButton
-from microscope.plugins.base_plugin import BasePlugin
+from qmicroscope.widgets.rubberband import ResizableRubberBand
+from qmicroscope.widgets.color_button import ColorButton
+from qmicroscope.plugins.base_plugin import BasePlugin
 from qtpy.QtGui import QMouseEvent
 from collections import defaultdict
 
 if TYPE_CHECKING:
-    from microscope.microscope import Microscope
+    from qmicroscope.microscope import Microscope
 
 
 class VectorNodeSignal(QObject):

@@ -1,4 +1,4 @@
-from microscope.plugins.base_plugin import BaseImagePlugin
+from qmicroscope.plugins.base_plugin import BaseImagePlugin
 from qtpy.QtGui import QColor, QPen, QMouseEvent
 from qtpy.QtCore import QPoint, QLineF
 from qtpy.QtWidgets import (
@@ -12,10 +12,10 @@ from qtpy.QtWidgets import (
     QHBoxLayout,
 )
 from typing import Dict, Any, Optional, TYPE_CHECKING
-from microscope.widgets.color_button import ColorButton
+from qmicroscope.widgets.color_button import ColorButton
 
 if TYPE_CHECKING:
-    from microscope.microscope import Microscope
+    from qmicroscope.microscope import Microscope
 
 
 class CrossHairPlugin(BaseImagePlugin):

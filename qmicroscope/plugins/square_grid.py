@@ -11,14 +11,14 @@ from qtpy.QtWidgets import (
 )
 from qtpy.QtCore import QPoint, Qt, QRect, QRectF, Signal, QObject
 from qtpy.QtGui import QColor, QPen
-from microscope.widgets.rubberband import ResizableRubberBand
-from microscope.widgets.color_button import ColorButton
-from microscope.plugins.base_plugin import BasePlugin
+from qmicroscope.widgets.rubberband import ResizableRubberBand
+from qmicroscope.widgets.color_button import ColorButton
+from qmicroscope.plugins.base_plugin import BasePlugin
 from qtpy.QtGui import QMouseEvent
 from collections import defaultdict
 
 if TYPE_CHECKING:
-    from microscope.microscope import Microscope
+    from qmicroscope.microscope import Microscope
 
 
 class CellSignal(QObject):
@@ -103,7 +103,6 @@ class SquareGridPlugin(BasePlugin):
             settings.get("grid_defined", False)
         )
         self._cell_size = int(settings.get("cell_size", 10))
-        
 
     def write_settings(self) -> Dict[str, Any]:
         """Writes the plugin's settings to a dictionary.
@@ -120,7 +119,7 @@ class SquareGridPlugin(BasePlugin):
         settings_values["grid_defined"] = self.plugin_state["grid_defined"]
         settings_values["cell_size"] = self._cell_size
         return settings_values
-    
+
     def add_settings(self, parent=None) -> Optional[QGroupBox]:
         """
         Create a new QGroupBox containing settings widgets for the grid plugin.
@@ -162,8 +161,6 @@ class SquareGridPlugin(BasePlugin):
 
         self.paintBoxes(self.parent.scene)
 
-
-
     def start_plugin(self):
         """Starts the plugin."""
         if self.plugin_state["grid_defined"]:
@@ -181,7 +178,6 @@ class SquareGridPlugin(BasePlugin):
         if self.rubberBand:
             self.rubberBand.destroy()
 
-    
     def context_menu_entry(self):
         """Returns a list of QAction objects representing the plugin's context menu options.
 
@@ -211,7 +207,7 @@ class SquareGridPlugin(BasePlugin):
         actions.append(self.start_drawing_grid_action)
 
         return actions
-    
+
     def mouse_move_event(self, event: QMouseEvent):
         """Handle mouse move events. If the grid is being defined and a rubberband object exists and the
         left mouse button is pressed, updates the rubberband object's position and the end position
@@ -344,7 +340,9 @@ class SquareGridPlugin(BasePlugin):
 
         num_rows = int(abs(y2 - y1) / self._cell_size)
         num_cols = int(abs(x2 - x1) / self._cell_size)
-        self._grid_cells = []
+        self._grid_cells: "list[list[CellGraphicsItem]]" = []
+        center_x = (x2 - x1) / 2
+        center_y = (y2 / y1) / 2
 
         for c in range(num_cols):
             row = []
@@ -355,9 +353,12 @@ class SquareGridPlugin(BasePlugin):
                 bot_right = QPoint(
                     x1 + ((c + 1) * self._cell_size), y1 + ((r + 1) * self._cell_size)
                 )
-                cell_def = QRectF(top_left, bot_right)
+                # cell_def = QRectF(top_left, bot_right)
                 # cell = scene.addRect(cell_def, pen=pen)
-                cell = CellGraphicsItem(cell_def)
+                # cell = CellGraphicsItem(cell_def)
+                cell = CellGraphicsItem(0, 0, self._cell_size, self._cell_size)
+                cell.setPos(top_left)
+                cell.setTransformOriginPoint(center_x, center_y)
                 cell.cell_signal = self.cell_signal
                 cell.setPen(pen)
                 scene.addItem(cell)
@@ -373,5 +374,16 @@ class SquareGridPlugin(BasePlugin):
         cell.setPen(QColor("red"))
         cell.setZValue(1)
         self.selected_cell = cell
+        self.scale(2.0)
 
-    
+    def scale(self, scale_factor):
+        x1 = self.start.x()
+        y1 = self.start.y()
+        for r, row in enumerate(self._grid_cells):
+            for c, cell in enumerate(row):
+                cell.setScale(scale_factor)
+                top_left = QPoint(
+                    x1 + (c * self._cell_size * scale_factor),
+                    y1 + (r * self._cell_size * scale_factor),
+                )
+                cell.setPos(top_left)

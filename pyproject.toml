@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "qmicroscope"
+description = "A camera widget for qt GUIs using qtpy"
+readme = "README.md"
+authors = [
+    { name = "Venkateswaran (Shekar) Shekar", email = "vshekar1@bnl.gov" },
+]
+requires-python = ">=3.8"
+
+dependencies = ["qtpy", "opencv-python", "Pillow"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dynamic = ["version"]
+
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "qmicroscope/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["qmicroscope"]

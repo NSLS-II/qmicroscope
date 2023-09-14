@@ -1,10 +1,10 @@
 from typing import Optional, Dict, Any, TYPE_CHECKING
 from qtpy.QtWidgets import QCheckBox
-from microscope.plugins.base_plugin import BasePlugin
+from qmicroscope.plugins.base_plugin import BasePlugin
 from qtpy.QtGui import QMouseEvent
 
 if TYPE_CHECKING:
-    from microscope.microscope import Microscope
+    from qmicroscope.microscope import Microscope
 
 
 class TogglePlugin(BasePlugin):

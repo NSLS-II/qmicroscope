@@ -1,7 +1,7 @@
 from qtpy.QtWidgets import QWidget, QGridLayout
 from qtpy.QtGui import QPaintEvent
 from qtpy.QtCore import QSettings
-from microscope.microscope import Microscope
+from qmicroscope.microscope import Microscope
 from typing import List
 
 """ A widget that contains one or more microscope widgets in a grid. """
