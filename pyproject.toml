@@ -31,3 +31,11 @@ build.hooks.vcs.version-file = "qmicroscope/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["qmicroscope"]
+
+[tool.setuptools_scm]
+root = "."
+fallback_version = "0.0.0"
+version_scheme = "semantic"
+local_scheme = "node-and-date"
+write_to = "qmicroscope/_version.py"
+

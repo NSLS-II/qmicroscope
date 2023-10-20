@@ -61,16 +61,16 @@ class Microscope(QWidget):
         # self.timer = QTimer(self)
         # self.timer.timeout.connect(self.downloader.downloadData)
 
-        self.plugins: List[BasePlugin] = []
+        self.plugins: Dict[str, BasePlugin] = {}
         for plugin_cls in self.plugin_classes:
             if isinstance(plugin_cls, SupportsBasePlugin):
-                self.plugins.append(plugin_cls(self))
+                self.plugins[plugin_cls.__name__] = plugin_cls(self)
             else:
                 print(
                     f"{plugin_cls.__name__} does not implement BasePlugin, ignoring Plugin"
                 )
 
-        for plugin in self.plugins:
+        for plugin in self.plugins.values():
             self.mouse_press_signal.connect(plugin.mouse_press_event)
             self.mouse_move_signal.connect(plugin.mouse_move_event)
             self.mouse_release_signal.connect(plugin.mouse_release_event)
@@ -91,17 +91,17 @@ class Microscope(QWidget):
             self.videoThread.setUrl(self.url)
             self.videoThread.setFPS(self.fps)
             self.videoThread.start()
-            for plugin in self.plugins:
+            for plugin in self.plugins.values():
                 plugin.start_plugin()
         elif self.videoThread.isRunning() and not start:
-            for plugin in self.plugins:
+            for plugin in self.plugins.values():
                 plugin.stop_plugin()
             self.videoThread.stop()
             self.videoThread.wait(500)
 
     def stop_plugins(self):
         "For cleaning up threads and other processes"
-        for plugin in self.plugins:
+        for plugin in self.plugins.values():
             plugin.stop_plugin()
 
     def eventFilter(self, obj, event):
@@ -162,7 +162,7 @@ class Microscope(QWidget):
         config_plugins_action.triggered.connect(self._config_plugins)
         self.addMenuItem(config_plugins_action)
 
-        for plugin in self.plugins:
+        for plugin in self.plugins.values():
             self.menu.addSection(plugin.name)
             context_menu_entry = plugin.context_menu_entry()
 
@@ -182,7 +182,7 @@ class Microscope(QWidget):
             self.menu.addMenu(item)
 
     def _config_plugins(self):
-        plugin_settings_dialog = PluginSettingsDialog(parent=self, plugins=self.plugins)
+        plugin_settings_dialog = PluginSettingsDialog(parent=self, plugins=self.plugins.values())
 
     def sizeHint(self) -> QSize:
         return QSize(400, 400)
@@ -195,7 +195,7 @@ class Microscope(QWidget):
             self.image = image
 
         # Loop through plugins to process video image
-        for plugin in self.plugins:
+        for plugin in self.plugins.values():
             if plugin.updates_image:
                 self.image = plugin.update_image_data(self.image)
 
@@ -269,7 +269,7 @@ class Microscope(QWidget):
         self.yDivs = settings.value("yDivs", 5, type=int)
         self.color = settings.value("color", False, type=bool)
 
-        for plugin in self.plugins:
+        for plugin in self.plugins.values():
             settings.beginGroup(plugin.name)
             settings_values = {}
             for key in settings.allKeys():
@@ -311,7 +311,7 @@ class Microscope(QWidget):
                 settings.setValue("scaleW", self.scale[0])
                 settings.setValue("scaleH", self.scale[1])
 
-            for plugin in self.plugins:
+            for plugin in self.plugins.values():
                 settings.beginGroup(plugin.name)
                 settings_values = plugin.write_settings()
                 for key, value in settings_values.items():
