@@ -73,6 +73,7 @@ class Form(QMainWindow):
     def closeEvent(self, event):
         settings = QSettings("NSLS2", "main")
         self.writeSettings(settings)
+        self.container.start(False)
         event.accept()
 
     def startButtonPressed(self):
