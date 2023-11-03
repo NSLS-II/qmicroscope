@@ -11,10 +11,10 @@ from qtpy.QtWidgets import (
     QCheckBox,
 )
 from qtpy.QtGui import QImage, QPainter, QPen, QFont, QColor
-from qmicroscope.plugins.base_plugin import BaseImagePlugin
+from qmicroscope.plugins.base_plugin import BasePlugin
 from qmicroscope.widgets.color_button import ColorButton
 from qmicroscope.utils import convert_str_bool
-from qtpy.QtGui import QMouseEvent
+from qtpy.QtGui import QMouseEvent, QKeyEvent
 from qtpy.QtCore import QThread, Signal, QObject, Qt, QTimer
 import cv2 as cv
 import numpy as np
@@ -173,7 +173,7 @@ class RecordPlugin(QObject):
 
     image_ready = Signal(object)
 
-    def __init__(self, parent: "Microscope") -> None:
+    def __init__(self, parent: "Optional[Microscope]" = None) -> None: 
         super().__init__(parent)
         # self.parent = parent
         self.name = "Record"
@@ -265,6 +265,15 @@ class RecordPlugin(QObject):
         pass
 
     def mouse_release_event(self, event: QMouseEvent):
+        pass
+
+    def mouse_wheel_event(self, event: QMouseEvent):
+        pass
+
+    def key_press_event(self, event: QKeyEvent):
+        pass
+
+    def key_release_event(self, event: QKeyEvent):
         pass
 
     def context_menu_entry(self):

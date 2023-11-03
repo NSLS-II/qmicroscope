@@ -1,5 +1,5 @@
 from typing import Dict, Any, Optional, List
-from qtpy.QtGui import QMouseEvent, QImage
+from qtpy.QtGui import QMouseEvent, QImage, QKeyEvent
 from qtpy.QtWidgets import QGroupBox, QAction
 from typing import Protocol, runtime_checkable
 
@@ -19,6 +19,15 @@ class SupportsBasePlugin(Protocol):
         ...
 
     def mouse_release_event(self, event: QMouseEvent):
+        ...
+    
+    def mouse_wheel_event(self, event: QMouseEvent):
+        ...
+    
+    def key_press_event(self, event: QKeyEvent):
+        ...
+
+    def key_release_event(self, event: QKeyEvent):
         ...
 
     def read_settings(self, settings: Dict[str, Any]):
@@ -53,7 +62,7 @@ class BasePlugin:
         parent: Parent widget of the plugin.
     """
 
-    def __init__(self, parent) -> None:
+    def __init__(self, parent=None) -> None:
         """
         Initializes the BasePlugin class.
 
@@ -92,6 +101,15 @@ class BasePlugin:
         pass
 
     def mouse_release_event(self, event: QMouseEvent):
+        pass
+    
+    def mouse_wheel_event(self, event: QMouseEvent):
+        pass
+
+    def key_press_event(self, event: QKeyEvent):
+        pass
+
+    def key_release_event(self, event: QKeyEvent):
         pass
 
     def read_settings(self, settings: Dict[str, Any]):

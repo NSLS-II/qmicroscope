@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from qtpy.QtCore import Signal, QByteArray, QPoint, QSize, QSettings, QEvent
-from qtpy.QtGui import QImage, QPainter, QContextMenuEvent, QMouseEvent, QPixmap
+from qtpy.QtGui import QImage, QPainter, QContextMenuEvent, QMouseEvent, QPixmap, QKeyEvent
 from qtpy.QtWidgets import (
     QWidget,
     QMenu,
@@ -22,7 +22,10 @@ class Microscope(QWidget):
     mouse_press_signal: Signal = Signal(object)
     mouse_move_signal: Signal = Signal(object)
     mouse_release_signal: Signal = Signal(object)
-
+    mouse_wheel_signal: Signal = Signal(object)
+    key_press_signal: Signal = Signal(object)
+    key_release_signal: Signal = Signal(object)
+    
     def __init__(
         self,
         parent: Optional[QWidget] = None,
@@ -53,13 +56,8 @@ class Microscope(QWidget):
 
         self.url: str = "http://localhost:8080/output.jpg"
 
-        # self.downloader = Downloader(self)
-        # self.downloader.imageReady.connect(self.updateImageData)
         self.videoThread = VideoThread(fps=self.fps, url=self.url, parent=self)
         self.videoThread.imageReady.connect(self.updateImageData)
-
-        # self.timer = QTimer(self)
-        # self.timer.timeout.connect(self.downloader.downloadData)
 
         self.plugins: Dict[str, BasePlugin] = {}
         for plugin_cls in self.plugin_classes:
@@ -74,6 +72,9 @@ class Microscope(QWidget):
             self.mouse_press_signal.connect(plugin.mouse_press_event)
             self.mouse_move_signal.connect(plugin.mouse_move_event)
             self.mouse_release_signal.connect(plugin.mouse_release_event)
+            self.mouse_wheel_signal.connect(plugin.mouse_wheel_event)
+            self.key_press_signal.connect(plugin.key_press_event)
+            self.key_release_signal.connect(plugin.key_release_event)
 
         self.view.viewport().installEventFilter(self)
 
@@ -85,8 +86,6 @@ class Microscope(QWidget):
             )
 
     def acquire(self, start: bool = True) -> None:
-        # self.downloader.setUrl(self.url)
-        # print(self.url)
         if start:
             self.videoThread.setUrl(self.url)
             self.videoThread.setFPS(self.fps)
@@ -114,9 +113,21 @@ class Microscope(QWidget):
                 self.mouse_move_event(event)
             if event.type() == QEvent.Wheel:
                 self.mouse_wheel_event(event)
+            if event.type() == QEvent.KeyPress:
+                self.key_press_event(event)
+            if event.type() == QEvent.KeyRelease:
+                self.key_release_event(event)
         return QWidget.eventFilter(self, obj, event)
 
+    def key_press_event(self, event: QKeyEvent):
+        self.key_press_signal.emit(event)
+
+    def key_release_event(self, event: QKeyEvent):
+        self.key_release_event.emit(event)
+
     def mouse_wheel_event(self, event):
+        self.mouse_wheel_signal.emit(event.angleDelta())        
+        """
         # Zoom Factor
         zoomInFactor = 1.05
         zoomOutFactor = 1 / zoomInFactor
@@ -141,7 +152,8 @@ class Microscope(QWidget):
         # Move scene to old position
         delta = newPos - oldPos
         self.view.translate(delta.x(), delta.y())
-
+        """
+        
     def mouse_press_event(self, a0: QMouseEvent):
         if self.viewport:
             self.clicked_url.emit(self.settings_group)
