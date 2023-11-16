@@ -11,7 +11,7 @@ authors = [
 ]
 requires-python = ">=3.8"
 
-dependencies = ["qtpy", "opencv-python", "Pillow"]
+dependencies = ["qtpy", "opencv-python-headless", "Pillow"]
 
 classifiers = [
     "Development Status :: 4 - Beta",

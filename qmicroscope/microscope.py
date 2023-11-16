@@ -128,10 +128,8 @@ class Microscope(QWidget):
         if obj is self.view:
             if event.type() == QEvent.Type.Enter:
                 self.view.setFocus()
-                print("Entered widget")
             if event.type() == QEvent.Type.Leave:
                 self.view.clearFocus()
-                print("Leaving Widget")
             if event.type() == QEvent.KeyPress:
                 self.key_press_event(event)
             if event.type() == QEvent.KeyRelease:
@@ -146,8 +144,7 @@ class Microscope(QWidget):
         self.key_release_signal.emit(event)
 
     def mouse_wheel_event(self, event):
-        print(event.angleDelta())
-        self.mouse_wheel_signal.emit(event.angleDelta())
+        self.mouse_wheel_signal.emit(event)
 
     def mouse_press_event(self, a0: QMouseEvent):
         if self.viewport:
