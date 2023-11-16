@@ -1,34 +1,35 @@
 import sys
 
-
 from qtpy.QtCore import QPoint, QSettings, QSize, Qt
-
 from qtpy.QtWidgets import (
-    QCheckBox,
-    QLineEdit,
-    QPushButton,
     QApplication,
-    QVBoxLayout,
-    QHBoxLayout,
+    QCheckBox,
     QFormLayout,
-    QSpinBox,
+    QHBoxLayout,
+    QLineEdit,
     QMainWindow,
-    QWidget,
+    QPushButton,
+    QSpinBox,
     QSplitter,
+    QVBoxLayout,
+    QWidget,
 )
-from qmicroscope.microscope import Microscope
+
 from qmicroscope.container import Container
-from qmicroscope.settings import Settings
+from qmicroscope.microscope import Microscope
 from qmicroscope.plugins import (
-    ZoomPlugin,
-    GridPlugin,
-    PresetPlugin,
-    ScalePlugin,
-    TogglePlugin,
+    C2CPlugin,
     CrossHairPlugin,
+    GridPlugin,
+    MouseWheelCameraZoomPlugin,
+    PresetPlugin,
     RecordPlugin,
+    ScalePlugin,
     SquareGridPlugin,
+    TogglePlugin,
+    ZoomPlugin,
 )
+from qmicroscope.settings import Settings
 
 
 class Form(QMainWindow):
@@ -49,6 +50,8 @@ class Form(QMainWindow):
             ScalePlugin,
             RecordPlugin,
             SquareGridPlugin,
+            MouseWheelCameraZoomPlugin,
+            C2CPlugin,
         ]
         self.main_microscope = Microscope(self, viewport=False, plugins=plugins)
         self.main_microscope.scale = [0, 500]

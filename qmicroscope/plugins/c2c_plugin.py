@@ -1,14 +1,19 @@
 import typing
-from qtpy.QtCore import QObject, Signal
+
+from qtpy.QtCore import QObject, QPoint, Qt, Signal
+from qtpy.QtGui import QKeyEvent
+
 from qmicroscope.plugins.base_plugin import BasePlugin
+
 if typing.TYPE_CHECKING:
     from qmicroscope.microscope import Microscope
 
+
 class ClickedSignal(QObject):
     clicked = Signal(object)
-    
+
+
 class C2CPlugin(BasePlugin):
-    
     def __init__(self, parent: "Optional[Microscope]" = None):
         """Initializes the C2CPlugin instance.
 
@@ -20,15 +25,24 @@ class C2CPlugin(BasePlugin):
         self.parent = parent
         self.c2c_active = False
         self.clicked_signal = ClickedSignal()
-        
 
     def mouse_press_event(self, event):
         if self.parent:
             self.parent: "Microscope"
             if self.c2c_active:
-                delta = event.pos() - self.parent.center 
+                delta = event.pos() - QPoint(
+                    int(self.parent.view.width() / 2),
+                    int(self.parent.view.height() / 2),
+                )
                 print(delta)
                 self.clicked_signal.clicked.emit(delta)
 
     def key_press_event(self, event):
-        print(event)
+        if event.key() == Qt.Key.Key_Control:
+            self.c2c_active = True
+            self.parent.setCursor(Qt.CursorShape.CrossCursor)
+
+    def key_release_event(self, event: QKeyEvent):
+        if event.key() == Qt.Key.Key_Control:
+            self.c2c_active = False
+            self.parent.unsetCursor()

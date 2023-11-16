@@ -1,21 +1,22 @@
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from collections import defaultdict
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
+from qtpy.QtCore import QObject, QPoint, QRect, QRectF, Qt, Signal
+from qtpy.QtGui import QColor, QMouseEvent, QPen
 from qtpy.QtWidgets import (
     QAction,
     QColorDialog,
-    QGraphicsScene,
-    QGroupBox,
     QFormLayout,
-    QSpinBox,
     QGraphicsRectItem,
+    QGraphicsScene,
     QGraphicsSceneMouseEvent,
+    QGroupBox,
+    QSpinBox,
 )
-from qtpy.QtCore import QPoint, Qt, QRect, QRectF, Signal, QObject
-from qtpy.QtGui import QColor, QPen
-from qmicroscope.widgets.rubberband import ResizableRubberBand
-from qmicroscope.widgets.color_button import ColorButton
+
 from qmicroscope.plugins.base_plugin import BasePlugin
-from qtpy.QtGui import QMouseEvent
-from collections import defaultdict
+from qmicroscope.widgets.color_button import ColorButton
+from qmicroscope.widgets.rubberband import ResizableRubberBand
 
 if TYPE_CHECKING:
     from qmicroscope.microscope import Microscope
@@ -342,7 +343,7 @@ class SquareGridPlugin(BasePlugin):
         num_cols = int(abs(x2 - x1) / self._cell_size)
         self._grid_cells: "list[list[CellGraphicsItem]]" = []
         center_x = (x2 - x1) / 2
-        center_y = (y2 / y1) / 2
+        center_y = (y2 - y1) / 2
 
         for c in range(num_cols):
             row = []

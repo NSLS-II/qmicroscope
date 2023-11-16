@@ -23,14 +23,14 @@ from qmicroscope.microscope import Microscope
 from qmicroscope.container import Container
 from qmicroscope.settings import Settings
 from qmicroscope.plugins.record_plugin import RecordPlugin
-
+from qmicroscope.plugins.c2c_plugin import C2CPlugin
 
 class Form(QMainWindow):
     def __init__(self, parent=None):
         super(Form, self).__init__(parent)
         # Create widgets
         self.setWindowTitle("NSLS-II Microscope Widget")
-        self.container = Container(self, plugins=[RecordPlugin])
+        self.container = Container(self, plugins=[RecordPlugin, C2CPlugin])
         self.container.count = 3
         self.container.size = [2, 2]
         self.microscope = self.container.microscope(0)

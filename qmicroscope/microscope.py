@@ -1,19 +1,29 @@
 from collections.abc import Iterable
-from qtpy.QtCore import Signal, QByteArray, QPoint, QSize, QSettings, QEvent
-from qtpy.QtGui import QImage, QPainter, QContextMenuEvent, QMouseEvent, QPixmap, QKeyEvent
-from qtpy.QtWidgets import (
-    QWidget,
-    QMenu,
-    QAction,
-    QGraphicsView,
-    QGraphicsScene,
-    QGraphicsPixmapItem,
-    QVBoxLayout,
+from typing import Any, Dict, List, Optional
+
+from PyQt5 import QtGui
+from qtpy.QtCore import QByteArray, QEvent, QPoint, QSettings, QSize, Qt, Signal
+from qtpy.QtGui import (
+    QContextMenuEvent,
+    QImage,
+    QKeyEvent,
+    QMouseEvent,
+    QPainter,
+    QPixmap,
 )
-from typing import List, Any, Dict, Optional
-from .widgets.downloader import VideoThread
-from .plugins.base_plugin import BasePlugin, SupportsBasePlugin
+from qtpy.QtWidgets import (
+    QAction,
+    QGraphicsPixmapItem,
+    QGraphicsScene,
+    QGraphicsView,
+    QMenu,
+    QVBoxLayout,
+    QWidget,
+)
+
 from .plugin_settings import PluginSettingsDialog
+from .plugins.base_plugin import BasePlugin, SupportsBasePlugin
+from .widgets.downloader import VideoThread
 
 
 class Microscope(QWidget):
@@ -25,7 +35,7 @@ class Microscope(QWidget):
     mouse_wheel_signal: Signal = Signal(object)
     key_press_signal: Signal = Signal(object)
     key_release_signal: Signal = Signal(object)
-    
+
     def __init__(
         self,
         parent: Optional[QWidget] = None,
@@ -41,6 +51,7 @@ class Microscope(QWidget):
         self.pixmap = QGraphicsPixmapItem(None)
         self.scene = QGraphicsScene(self)
         self.view = QGraphicsView(self.scene)
+        self.view.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         self.scene.addItem(self.pixmap)
         self.layout = QVBoxLayout()
@@ -77,6 +88,7 @@ class Microscope(QWidget):
             self.key_release_signal.connect(plugin.key_release_event)
 
         self.view.viewport().installEventFilter(self)
+        self.view.installEventFilter(self)
 
     def updatedImageSize(self) -> None:
         if self.image.size() != self.minimumSize():
@@ -113,47 +125,30 @@ class Microscope(QWidget):
                 self.mouse_move_event(event)
             if event.type() == QEvent.Wheel:
                 self.mouse_wheel_event(event)
+        if obj is self.view:
+            if event.type() == QEvent.Type.Enter:
+                self.view.setFocus()
+                print("Entered widget")
+            if event.type() == QEvent.Type.Leave:
+                self.view.clearFocus()
+                print("Leaving Widget")
             if event.type() == QEvent.KeyPress:
                 self.key_press_event(event)
             if event.type() == QEvent.KeyRelease:
                 self.key_release_event(event)
+
         return QWidget.eventFilter(self, obj, event)
 
     def key_press_event(self, event: QKeyEvent):
         self.key_press_signal.emit(event)
 
     def key_release_event(self, event: QKeyEvent):
-        self.key_release_event.emit(event)
+        self.key_release_signal.emit(event)
 
     def mouse_wheel_event(self, event):
-        self.mouse_wheel_signal.emit(event.angleDelta())        
-        """
-        # Zoom Factor
-        zoomInFactor = 1.05
-        zoomOutFactor = 1 / zoomInFactor
+        print(event.angleDelta())
+        self.mouse_wheel_signal.emit(event.angleDelta())
 
-        # Set Anchors
-        self.view.setTransformationAnchor(QGraphicsView.NoAnchor)
-        self.view.setResizeAnchor(QGraphicsView.NoAnchor)
-
-        # Save the scene pos
-        oldPos = self.view.mapToScene(event.pos())
-
-        # Zoom
-        if event.angleDelta().y() > 0:
-            zoomFactor = zoomInFactor
-        else:
-            zoomFactor = zoomOutFactor
-        self.view.scale(zoomFactor, zoomFactor)
-
-        # Get the new position
-        newPos = self.view.mapToScene(event.pos())
-
-        # Move scene to old position
-        delta = newPos - oldPos
-        self.view.translate(delta.x(), delta.y())
-        """
-        
     def mouse_press_event(self, a0: QMouseEvent):
         if self.viewport:
             self.clicked_url.emit(self.settings_group)
@@ -161,6 +156,7 @@ class Microscope(QWidget):
         self.mouse_press_signal.emit(a0)
 
     def mouse_move_event(self, a0: QMouseEvent):
+        self.setFocus()
         self.mouse_move_signal.emit(a0)
 
     def mouse_release_event(self, a0: QMouseEvent) -> None:
@@ -194,7 +190,9 @@ class Microscope(QWidget):
             self.menu.addMenu(item)
 
     def _config_plugins(self):
-        plugin_settings_dialog = PluginSettingsDialog(parent=self, plugins=self.plugins.values())
+        plugin_settings_dialog = PluginSettingsDialog(
+            parent=self, plugins=self.plugins.values()
+        )
 
     def sizeHint(self) -> QSize:
         return QSize(400, 400)
