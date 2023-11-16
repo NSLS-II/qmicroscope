@@ -30,10 +30,11 @@ class C2CPlugin(BasePlugin):
         if self.parent:
             self.parent: "Microscope"
             if self.c2c_active:
-                delta = event.pos() - QPoint(
-                    int(self.parent.view.width() / 2),
-                    int(self.parent.view.height() / 2),
-                )
+                delta_x = event.pos().x() - int(self.parent.view.width() / 2)
+                delta_y = -(
+                    event.pos().y() - int(self.parent.view.height() / 2)
+                )  # Up is negative y and down is positive
+                delta = QPoint(delta_x, delta_y)
                 print(delta)
                 self.clicked_signal.clicked.emit(delta)
 
