@@ -39,9 +39,11 @@ class MouseWheelCameraZoomPlugin(BasePlugin):
             if event.angleDelta().y() > 0:
                 if self.current_url_index < len(self.urls) - 1:
                     self.current_url_index += 1
+                    self.parent.videoThread.setUrl(self.urls[self.current_url_index])
             else:
                 if self.current_url_index > 0:
                     self.current_url_index -= 1
-            self.parent.videoThread.setUrl(self.urls[self.current_url_index])                
+                    self.parent.videoThread.setUrl(self.urls[self.current_url_index])
+            
             
     
