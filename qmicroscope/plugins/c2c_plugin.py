@@ -34,9 +34,9 @@ class C2CPlugin(BasePlugin):
                 delta_y = -(
                     event.pos().y() - int(self.parent.view.height() / 2)
                 )  # Up is negative y and down is positive
-                delta = QPoint(delta_x, delta_y)
-                print(delta)
-                self.clicked_signal.clicked.emit(delta)
+                
+                self.clicked_signal.clicked.emit({"x_pixel_delta": delta_x, 
+                                                  "y_pixel_delta": delta_y,})
 
     def key_press_event(self, event):
         if event.key() == Qt.Key.Key_Control:
