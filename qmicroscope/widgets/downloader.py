@@ -65,11 +65,8 @@ class VideoThread(QThread):
         """Only request a new image if this is the first/last completed."""
         if not self.isMjpegFeed:
             try:
-                file = BytesIO(
-                    urllib.request.urlopen(self.url, timeout=1000 / self.fps).read()
-                )
-                img = Image.open(file)
-                qimage = ImageQt.ImageQt(img)
+                data = urllib.request.urlopen(self.url, timeout=1000 / self.fps).read()
+                qimage = QImage.fromData(data)
                 self.showing_error = False
                 self.imageReady.emit(qimage)
             except urllib.error.URLError:
